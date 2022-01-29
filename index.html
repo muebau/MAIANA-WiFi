@@ -138,6 +138,7 @@
 
     </div>
     <div>
+        <button type="button" id="refresh">refresh</button>
         <form>
             <fieldset>
                 <legend>WiFi settings</legend>
@@ -216,36 +217,48 @@
                 <input type="number" id="maiana-bowoffset" name="maiana-bowoffset" value="" min="0" required>
                 <label for="maiana-bowoffset">bow offset (m)</label>
 
-                <button type="button" id="maiana-getdata">get current data</button>
                 <button type="button" id="maiana-set">set</button>
-            </fieldset>
-        </form>
-        <form>
-            <fieldset>
-                <legend>factory reset</legend>
-                <button type="button" id="factory-reset">reset</button>
             </fieldset>
         </form>
     </div>
     <script>
-        function get(url, params, callback) {
+        function get(url, params) {
             url += '?' + new URLSearchParams(params).toString();
 
-            fetch(url).then(data => data.text())
-                .then((text) => {
-                    callback(text);
-                });
+            return fetch(url).then(data => data.json());
         }
 
-        document.getElementById('wifi-set').click = function () { };
-        document.getElementById('gen-pw').click = function () { document.getElementById('wifi-pass').value = Math.random().toString(36).substr(2, 16); };
+        document.getElementById('wifi-set').onclick = function () {
+            let wifi = document.querySelector('input[name="wifi"]:checked').value;
+            let port = document.getElementById('protocol-port').value;
 
-        document.getElementById('protocol-set').click = function () { };
+            get("/wifi", {"protocol": protocol, "port": port}).then(data => {
+                console.log(data);
+            });
+        };
+        document.getElementById('wifi-genpw').onclick = function () {
+            document.getElementById('wifi-pass').value = Math.random().toString(36).substr(2, 16);
+        };
 
-        document.getElementById('maiana-set').click = function () { };
-        document.getElementById('maiana-getdata').click = function () { };
+        document.getElementById('protocol-set').onclick = function () {
+            let protocol = document.querySelector('input[name="protocol"]:checked').value;
+            let port = document.getElementById('protocol-port').value;
 
-        document.getElementById('factory-reset').click = function () { };
+            get("/protocol", {"protocol": protocol, "port": port}).then(data => {
+                console.log(data);
+            });
+        };
+
+        document.getElementById('maiana-set').onclick = function () {
+            let protocol = document.querySelector('input[name="protocol"]:checked').value;
+            let port = document.getElementById('protocol-port').value;
+
+            get("/protocol", {"protocol": protocol, "port": port}, callback).then(data => {
+                console.log(data);
+            });
+        };
+
+        document.getElementById('refresh').onclick = function () { };
     </script>
 </body>
 
