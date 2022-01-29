@@ -60,6 +60,23 @@
             width: 100%;
         }
 
+        select {
+            appearance: none;
+            min-height: 50px;
+            position: center;
+            width: 100%;
+            margin-top: 20px;
+            background-color: #303245;
+            border-radius: 12px;
+            border: 0;
+            box-sizing: border-box;
+            color: #eee;
+            font-size: 18px;
+            height: 100%;
+            outline: 0;
+            padding: 4px 20px 0;
+        }
+
         input[type=text],
         [type=number] {
             min-height: 50px;
@@ -90,18 +107,7 @@
         }
 
         input[type=radio]:checked+label {
-            border-radius: 12px;
-            text-align: center;
-            height: 50px;
-            color: #eee;
-            margin-top: 20px;
-            margin-bottom: 5px;
-            font-family: sans-serif;
-            font-size: 18px;
-            background-image: none;
             background-color: #06b;
-            padding: 4px 20px 0;
-            width: 100%;
         }
 
         .radioButtons {
@@ -196,13 +202,16 @@
                 <input type="text" id="maiana-callsign" name="maiana-callsign" value="" required>
                 <label for="maiana-callsign">call sign</label>
 
-                <select id="maiana-vesseltype" name="maiana-vesseltype">
+
+                <select id="maiana-vesseltype">
                     <option value="30">Fishing</option>
                     <option value="34">Diving</option>
                     <option value="36">Sailing</option>
                     <option value="37" selected>Pleasure craft</option>
                 </select>
+
                 <label for="maiana-vesseltype">vessel type</label>
+
 
                 <input type="number" id="maiana-loa" name="maiana-loa" value="" min="1" required>
                 <label for="maiana-loa">LOA (m)</label>
