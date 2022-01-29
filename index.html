@@ -52,7 +52,8 @@
             width: 100%;
         }
 
-        input[type=text], [type=number] {
+        input[type=text],
+        [type=number] {
             min-height: 50px;
             position: center;
             width: 100%;
@@ -123,7 +124,7 @@
 
 <body>
     <h1>MAIANA</h1>
-    <div>
+    <div id="infobox">
         INFO BOX
 
     </div>
@@ -146,9 +147,9 @@
                 <input type="text" id="wifi-pass" name="pass" value="" maxlength="63" required>
                 <label for="wifi-pass">password</label>
 
-                <button type="button" onclick="document.getElementById('wifi-pass').value = Math.random().toString(36).substr(2, 16)">generate password</button>
+                <button type="button" id="wifi-genpw">generate password</button>
 
-                <button type="button">set</button>
+                <button type="button" id="wifi-set">set</button>
             </fieldset>
         </form>
     </div>
@@ -168,10 +169,10 @@
                     <label for="protocol-udp">UDP</label>
                 </div>
 
-                <input type="number" id="protocol-port" name="port" value="10110"  min="1" max="65536">
+                <input type="number" id="protocol-port" name="port" value="10110" min="1" max="65536">
                 <label for="protocol-port">PORT</label>
 
-                <button type="button">set</button>
+                <button type="button" id="protocol-set">set</button>
             </fieldset>
         </form>
     </div>
@@ -206,17 +207,37 @@
                 <input type="number" id="maiana-bowoffset" name="maiana-bowoffset" value="" min="0" required>
                 <label for="maiana-bowoffset">bow offset (m)</label>
 
-                <button type="button">get current data</button>
-                <button type="button">set</button>
+                <button type="button" id="maiana-getdata">get current data</button>
+                <button type="button" id="maiana-set">set</button>
             </fieldset>
         </form>
         <form>
             <fieldset>
                 <legend>factory reset</legend>
-                <button type="button">reset</button>
+                <button type="button" id="factory-reset">reset</button>
             </fieldset>
         </form>
     </div>
+    <script>
+        function get(url, params, callback) {
+            url += '?' + new URLSearchParams(params).toString();
+
+            fetch(url).then(data => data.text())
+                .then((text) => {
+                    callback(text);
+                });
+        }
+
+        document.getElementById('wifi-set').click = function () { };
+        document.getElementById('gen-pw').click = function () { document.getElementById('wifi-pass').value = Math.random().toString(36).substr(2, 16); };
+
+        document.getElementById('protocol-set').click = function () { };
+
+        document.getElementById('maiana-set').click = function () { };
+        document.getElementById('maiana-getdata').click = function () { };
+
+        document.getElementById('factory-reset').click = function () { };
+    </script>
 </body>
 
 </html>
