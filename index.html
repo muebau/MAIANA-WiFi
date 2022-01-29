@@ -109,65 +109,81 @@
     </div>
     <div>
         <form>
-            <input type="radio" id="wifi-ap" name="wifi" value="ap" checked>
-            <label for="wifi-ap">AP</label>
+            <fieldset>
+                <legend>Station data</legend>
+                <label for="wifi-ap">AP</label>
+                <input type="radio" id="wifi-ap" name="wifi" value="ap" checked>
 
-            <input type="radio" id="wifi-cli" name="wifi" value="cli">
-            <label for="wifi-cli">client</label>
+                <label for="wifi-cli">client</label>
+                <input type="radio" id="wifi-cli" name="wifi" value="cli">
 
-            <input type="text" id="wifi-ssid" name="ssid" value="MAIANA">
-            <label for="wifi-ssid">SSID</label>
+                <label for="wifi-ssid">SSID</label>
+                <input type="text" id="wifi-ssid" name="ssid" value="MAIANA">
 
-            <input type="text" id="wifi-pass" name="pass" value="Math.random().toString(36).substr(2, 8)">
-            <label for="wifi-pass">password</label>
+                <label for="wifi-pass">password</label>
+                <input type="text" id="wifi-pass" name="pass" value="Math.random().toString(36).substr(2, 8)">
 
-            <button type="button">SAVE</button>
-        </form>
-    </div>
-    <div>
-        <form>
-            <input type="radio" id="protocol-none" name="protocol" value="none" checked>
-            <label for="protocol-none">NONE</label>
-
-            <input type="radio" id="protocol-tcp" name="protocol" value="tcp">
-            <label for="protocol-tcp">TCP</label>
-
-            <input type="radio" id="protocol-udp" name="protocol" value="udp">
-            <label for="protocol-udp">UDP</label>
-
-            <input type="text" id="protocol-port" name="port" value="10110">
-            <label for="protocol-port">PORT</label>
-
-            <button type="button">SAVE</button>
+                <button type="button">set</button>
+            </fieldset>
         </form>
     </div>
     <div>
         <form>
             <fieldset>
-                <legend>A Stacked Form</legend>
+                <legend>Station data</legend>
+                <label for="protocol-none">NONE</label>
+                <input type="radio" id="protocol-none" name="protocol" value="none" checked>
+
+                <label for="protocol-tcp">TCP</label>
+                <input type="radio" id="protocol-tcp" name="protocol" value="tcp">
+
+                <label for="protocol-udp">UDP</label>
+                <input type="radio" id="protocol-udp" name="protocol" value="udp">
+
+                <label for="protocol-port">PORT</label>
+                <input type="text" id="protocol-port" name="port" value="10110">
+
+                <button type="button">set</button>
+            </fieldset>
+        </form>
+    </div>
+    <div>
+        <form>
+            <fieldset>
+                <legend>Station data</legend>
 
                 <label for="maiana-mmsi">MMSI</label>
                 <input type="text" id="maiana-mmsi" name="maiana-mmsi" value="">
 
-                <input type="text" id="maiana-callsign" name="maiana-callsign" value="">
                 <label for="maiana-callsign">call sign</label>
+                <input type="text" id="maiana-callsign" name="maiana-callsign" value="">
 
-                <input type="text" id="maiana-vesseltype" name="maiana-vesseltype" value="">
                 <label for="maiana-vesseltype">vessel type</label>
+                <select id="maiana-vesseltype" name="maiana-vesseltype">
+                    <option value="30">Fishing</option>
+                    <option value="34">Diving</option>
+                    <option value="36">Sailing</option>
+                    <option value="37" selected>Pleasure craft</option>
+                </select>
 
-                <input type="text" id="maiana-loa" name="maiana-loa" value="">
                 <label for="maiana-loa">LOA</label>
+                <input type="text" id="maiana-loa" name="maiana-loa" value="">
 
-                <input type="text" id="maiana-beam" name="maiana-beam" value="">
                 <label for="maiana-beam">beam</label>
+                <input type="text" id="maiana-beam" name="maiana-beam" value="">
 
-                <input type="text" id="maiana-portoffset" name="maiana-portoffset" value="">
                 <label for="maiana-portoffset">port offset</label>
+                <input type="text" id="maiana-portoffset" name="maiana-portoffset" value="">
 
-                <input type="text" id="maiana-bowoffset" name="maiana-bowoffset" value="">
                 <label for="maiana-bowoffset">bow offset</label>
+                <input type="text" id="maiana-bowoffset" name="maiana-bowoffset" value="">
 
-                <button type="button">SAVE</button>
+                <button type="button">set</button>
+            </fieldset>
+        </form>
+        <form>
+            <fieldset>
+                <button type="button">factory reset</button>
             </fieldset>
         </form>
     </div>
