@@ -142,7 +142,7 @@
                 <input type="text" id="wifi-ssid" name="ssid" value="MAIANA">
                 <label for="wifi-ssid">SSID</label>
 
-                <input type="text" id="wifi-pass" name="pass" value="">
+                <input type="text" id="wifi-pass" name="pass" value="" maxlength="63" required>
                 <label for="wifi-pass">password</label>
 
                 <button type="button" onclick="document.getElementById('wifi-pass').value = Math.random().toString(36).substr(2, 16)">generate password</button>
@@ -167,7 +167,7 @@
                     <label for="protocol-udp">UDP</label>
                 </div>
 
-                <input type="text" id="protocol-port" name="port" value="10110">
+                <input type="number" id="protocol-port" name="port" value="10110"  min="1" max="65536">
                 <label for="protocol-port">PORT</label>
 
                 <button type="button">set</button>
@@ -179,10 +179,10 @@
             <fieldset>
                 <legend>Station data</legend>
 
-                <input type="text" id="maiana-mmsi" name="maiana-mmsi" value="">
+                <input type="text" id="maiana-mmsi" name="maiana-mmsi" value="" required>
                 <label for="maiana-mmsi">MMSI</label>
 
-                <input type="text" id="maiana-callsign" name="maiana-callsign" value="">
+                <input type="text" id="maiana-callsign" name="maiana-callsign" value="" required>
                 <label for="maiana-callsign">call sign</label>
 
                 <select id="maiana-vesseltype" name="maiana-vesseltype">
@@ -193,16 +193,16 @@
                 </select>
                 <label for="maiana-vesseltype">vessel type</label>
 
-                <input type="text" id="maiana-loa" name="maiana-loa" value="">
+                <input type="number" id="maiana-loa" name="maiana-loa" value="" min="1" required>
                 <label for="maiana-loa">LOA (m)</label>
 
-                <input type="text" id="maiana-beam" name="maiana-beam" value="">
+                <input type="number" id="maiana-beam" name="maiana-beam" value="" min="1" required>
                 <label for="maiana-beam">beam (m)</label>
 
-                <input type="text" id="maiana-portoffset" name="maiana-portoffset" value="">
+                <input type="number" id="maiana-portoffset" name="maiana-portoffset" value="" min="0" required>
                 <label for="maiana-portoffset">port offset (m)</label>
 
-                <input type="text" id="maiana-bowoffset" name="maiana-bowoffset" value="">
+                <input type="number" id="maiana-bowoffset" name="maiana-bowoffset" value="" min="0" required>
                 <label for="maiana-bowoffset">bow offset (m)</label>
 
                 <button type="button">get current data</button>
