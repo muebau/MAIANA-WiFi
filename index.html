@@ -5,23 +5,22 @@
     <title>MAIANA</title>
     <style>
         input[type=radio] {
-            display:none; 
-            margin:10px;
+            display: none;
+            margin: 10px;
         }
 
-        input[type=radio] + label {
-            display:inline-block;
-            margin:-2px;
+        input[type=radio]+label {
+            display: inline-block;
+            margin: -2px;
             padding: 4px 12px;
             background-color: #e7e7e7;
             border-color: #ddd;
         }
 
-        input[type=radio]:checked + label { 
-        background-image: none;
-            background-color:#d0d0d0;
+        input[type=radio]:checked+label {
+            background-image: none;
+            background-color: #d0d0d0;
         }
-
     </style>
 </head>
 
@@ -37,7 +36,7 @@
             <label for="wifi-ap">AP</label>
 
             <input type="radio" id="wifi-cli" name="wifi" value="cli">
-            <label for="wifi-cli">AP</label>
+            <label for="wifi-cli">client</label>
 
             <input type="text" id="wifi-ssid" name="ssid" value="MAIANA">
             <label for="wifi-ssid">SSID</label>
@@ -63,6 +62,36 @@
             <label for="protocol-port">PORT</label>
 
             <button type="button">SAVE</button>
+        </form>
+    </div>
+    <div>
+        <form>
+            <fieldset>
+                <legend>A Stacked Form</legend>
+
+                <label for="maiana-mmsi">MMSI</label>
+                <input type="text" id="maiana-mmsi" name="maiana-mmsi" value="">
+
+                <input type="text" id="maiana-callsign" name="maiana-callsign" value="">
+                <label for="maiana-callsign">call sign</label>
+
+                <input type="text" id="maiana-vesseltype" name="maiana-vesseltype" value="">
+                <label for="maiana-vesseltype">vessel type</label>
+
+                <input type="text" id="maiana-loa" name="maiana-loa" value="">
+                <label for="maiana-loa">LOA</label>
+
+                <input type="text" id="maiana-beam" name="maiana-beam" value="">
+                <label for="maiana-beam">beam</label>
+
+                <input type="text" id="maiana-portoffset" name="maiana-portoffset" value="">
+                <label for="maiana-portoffset">port offset</label>
+
+                <input type="text" id="maiana-bowoffset" name="maiana-bowoffset" value="">
+                <label for="maiana-bowoffset">bow offset</label>
+
+                <button type="button">SAVE</button>
+            </fieldset>
         </form>
     </div>
 </body>
