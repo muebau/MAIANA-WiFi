@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>MAIANA</title>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <h1>MAIANA</h1>
+    <div>
+        INFO BOX
+
+    </div>
+    <div>
+        <form>
+            <input type="radio" id="wifi-ap" name="wifi" value="ap" checked>
+            <label for="wifi-ap">AP</label>
+
+            <input type="radio" id="wifi-cli" name="wifi" value="cli">
+            <label for="wifi-cli">AP</label>
+
+            <input type="text" id="wifi-ssid" name="ssid" value="MAIANA">
+            <label for="wifi-ssid">SSID</label>
+
+            <input type="text" id="wifi-pass" name="pass" value="Math.random().toString(36).substr(2, 8)">
+            <label for="wifi-pass">password</label>
+
+            <button type="button">SAVE</button>
+        </form>
+    </div>
+    <div>
+        <form>
+            <input type="radio" id="protocol-none" name="protocol" value="none" checked>
+            <label for="protocol-none">NONE</label>
+
+            <input type="radio" id="protocol-tcp" name="protocol" value="tcp">
+            <label for="protocol-tcp">TCP</label>
+
+            <input type="radio" id="protocol-udp" name="protocol" value="udp">
+            <label for="protocol-udp">UDP</label>
+
+            <input type="text" id="protocol-port" name="port" value="10110">
+            <label for="protocol-port">PORT</label>
+
+            <button type="button">SAVE</button>
+        </form>
+    </div>
+</body>
+
+</html>
