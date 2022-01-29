@@ -216,7 +216,6 @@
                     <option value="36">Sailing</option>
                     <option value="37" selected>Pleasure craft</option>
                 </select>
-
                 <label for="maiana-vesseltype">vessel type</label>
 
 
@@ -243,11 +242,16 @@
             return fetch(url).then(data => data.json());
         }
 
-        document.getElementById('wifi-set').onclick = function () {
-            let wifi = document.querySelector('input[name="wifi"]:checked').value;
-            let port = document.getElementById('protocol-port').value;
+        function setCheckbox() {
+            document.querySelector('input[name="protocol"],[value="tcp"]').checked = true;
+        }
 
-            get("/wifi", {"protocol": protocol, "port": port}).then(data => {
+        document.getElementById('wifi-set').onclick = function () {
+            let type = document.querySelector('input[name="wifi"]:checked').value;
+            let ssid = document.getElementById('wifi-ssid').value;
+            let password = document.getElementById('wifi-pass').value;
+
+            get("/wifi", { "type": type, "ssid": ssid, "password": password }).then(data => {
                 console.log(data);
             });
         };
@@ -259,21 +263,30 @@
             let protocol = document.querySelector('input[name="protocol"]:checked').value;
             let port = document.getElementById('protocol-port').value;
 
-            get("/protocol", {"protocol": protocol, "port": port}).then(data => {
+            get("/protocol", { "protocol": protocol, "port": port }).then(data => {
                 console.log(data);
             });
         };
 
         document.getElementById('maiana-set').onclick = function () {
-            let protocol = document.querySelector('input[name="protocol"]:checked').value;
-            let port = document.getElementById('protocol-port').value;
+            let mmsi = document.getElementById('maiana-mmsi').value;
+            let callsign = document.getElementById('maiana-callsign').value;
+            let vesseltype = document.querySelector('input[name="maiana-vesseltype"]:checked').value;
+            let loa = document.getElementById('maiana-loa').value;
+            let beam = document.getElementById('maiana-beam').value;
+            let portoffset = document.getElementById('maiana-portoffset').value;
+            let bowoffset = document.getElementById('maiana-bowoffset').value;
 
-            get("/protocol", {"protocol": protocol, "port": port}, callback).then(data => {
+            get("/station", {"mmsi": mmsi, "callsign": callsign, "vesseltype": vesseltype, "loa": loa, "beam": beam, "portoffset": portoffset, "bowoffset": bowoffset }, callback).then(data => {
                 console.log(data);
             });
         };
 
-        document.getElementById('refresh').onclick = function () { };
+        document.getElementById('refresh').onclick = function () {
+            get("/protocol").then(data => {
+                
+            });
+        };
     </script>
 </body>
 
