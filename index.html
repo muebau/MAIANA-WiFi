@@ -65,6 +65,7 @@
         }
 
         input[type=radio]+label {
+            text-align: center;
             height: 50px;
             display: inline-block;
             margin-top: 20px;
@@ -76,9 +77,11 @@
             background-color: #303245;
             border-color: #ddd;
             padding: 4px 20px 0;
+            width: 100%;
         }
 
         input[type=radio]:checked+label {
+            text-align: center;
             height: 50px;
             color: #eee;
             margin-top: 20px;
@@ -88,6 +91,12 @@
             background-image: none;
             background-color: #06b;
             padding: 4px 20px 0;
+            width: 100%;
+        }
+
+        .radioButtons {
+            display: flex;
+            justify-content: space-around;
         }
 
         button {
@@ -122,7 +131,7 @@
             <fieldset>
                 <legend>WiFi settings</legend>
 
-                <div id="radioButtons">
+                <div class="radioButtons">
                     <input type="radio" id="wifi-ap" name="wifi" value="ap" checked>
                     <label for="wifi-ap">AP</label>
 
@@ -145,7 +154,7 @@
             <fieldset>
                 <legend>NMEA0183 forwarding</legend>
 
-                <div id="radioButtons">
+                <div class="radioButtons">
                     <input type="radio" id="protocol-none" name="protocol" value="none" checked>
                     <label for="protocol-none">NONE</label>
 
