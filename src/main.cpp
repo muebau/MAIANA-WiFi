@@ -1,5 +1,21 @@
+//------------------includes--------------------
 
+//general
 #include <Arduino.h>
+
+//webserver
+
+//---------------global variables and definitions-------------
+
+//general
+
+//webserver
+
+//---------------functions-----------------------------
+
+//general
+
+//webserver
 
 void setup() {
   
@@ -16,7 +32,3 @@ void loop() {
   //webserver
 
 }
-
-//general
-
-//webserver
