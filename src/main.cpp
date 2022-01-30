@@ -1,7 +1,23 @@
+//------------------includes--------------------
 
+//general
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+
+//webserver
+
+//---------------global variables and definitions-------------
+
+//general
+
+//webserver
+
+//---------------functions-----------------------------
+
+//general
+
+//scanWiFi
 void scanWiFi()
 {
   WiFi.mode(WIFI_STA);
@@ -27,9 +43,10 @@ void scanWiFi()
   serializeJson(doc, Serial);
 }
 
-void setup()
-{
+//webserver
 
+void setup() {
+  
   //general
 
   //webserver
@@ -42,7 +59,3 @@ void loop()
 
   //webserver
 }
-
-//general
-
-//webserver
