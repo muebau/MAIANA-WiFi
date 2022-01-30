@@ -1,9 +1,22 @@
+
 #include <Arduino.h>
 
 void setup() {
-  // put your setup code here, to run once:
+  
+  //general
+
+  //webserver
+  
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
+  //general
+
+  //webserver
+
 }
+
+//general
+
+//webserver
