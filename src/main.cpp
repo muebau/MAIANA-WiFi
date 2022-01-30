@@ -29,7 +29,7 @@ void scanWiFi()
 
   if (n == 0)
   {
-    doc["networks"][0] = [];
+    doc.createNestedArray("networks");
   }
   else
   {
