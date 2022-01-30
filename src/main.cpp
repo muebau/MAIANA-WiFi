@@ -18,31 +18,32 @@ struct wifi
   String type;
   String ssid;
   String password;
-};
+} wifiSettings;
 
 struct protocol
 {
   String type;
   int port;
-};
+} protocolSettings;
 
 struct station
 {
   String mmsi;
-  String callsing;
+  String callsign;
+  String vesselname;
   int vesseltype;
   int loa;
   int beam;
   int portoffset;
   int bowoffset;
-};
+} stationSettings;
 
 struct info
 {
   String firmware = "1.1";
   String ip;
   String confogTimeout;
-};
+} infoSettings;
 
 
 
@@ -156,7 +157,9 @@ void setup()
               String message;
               if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_SSID) && request->hasParam(PARAM_PASSWORD))
               {
-                message = request->getParam(PARAM_TYPE)->value() + request->getParam(PARAM_SSID)->value() + request->getParam(PARAM_PASSWORD)->value();
+                wifiSettings.type = request->getParam(PARAM_TYPE)->value();
+                wifiSettings.ssid = request->getParam(PARAM_SSID)->value();
+                wifiSettings.password = request->getParam(PARAM_PASSWORD)->value();
               }
               else
               {
@@ -171,7 +174,8 @@ void setup()
               String message;
               if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_PORT))
               {
-                message = request->getParam(PARAM_TYPE)->value() + request->getParam(PARAM_PORT)->value();
+                protocolSettings.type = request->getParam(PARAM_TYPE)->value();
+                protocolSettings.port = request->getParam(PARAM_PORT)->value().toInt();
               }
               else
               {
@@ -186,7 +190,14 @@ void setup()
               String message;
               if (request->hasParam(PARAM_MMSI) && request->hasParam(PARAM_CALLSIGN) && request->hasParam(PARAM_VESSELNAME) && request->hasParam(PARAM_VESSELTYPE) && request->hasParam(PARAM_LOA) && request->hasParam(PARAM_BEAM) && request->hasParam(PARAM_PORTOFFSET) && request->hasParam(PARAM_BOWOFFSET))
               {
-                message = request->getParam(PARAM_MMSI)->value() + request->getParam(PARAM_CALLSIGN)->value() + request->getParam(PARAM_VESSELNAME)->value() + request->getParam(PARAM_VESSELTYPE)->value() + request->getParam(PARAM_LOA)->value() + request->getParam(PARAM_BEAM)->value() + request->getParam(PARAM_PORTOFFSET)->value() + request->getParam(PARAM_BOWOFFSET)->value();
+                stationSettings.mmsi = request->getParam(PARAM_MMSI)->value();
+                stationSettings.callsign = request->getParam(PARAM_CALLSIGN)->value();
+                stationSettings.vesselname = request->getParam(PARAM_VESSELNAME)->value();
+                stationSettings.vesseltype = request->getParam(PARAM_VESSELTYPE)->value().toInt();
+                stationSettings.loa = request->getParam(PARAM_LOA)->value().toInt();
+                stationSettings.beam = request->getParam(PARAM_BEAM)->value().toInt();
+                stationSettings.bowoffset = request->getParam(PARAM_BOWOFFSET)->value().toInt();
+                stationSettings.portoffset = request -> getParam(PARAM_PORTOFFSET)->value().toInt();
               }
               else
               {
