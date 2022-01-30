@@ -141,11 +141,24 @@
         button:active {
             background-color: #06b;
         }
+
+        table {
+            width: 100%;
+        }
+
+        table td:nth-child(1) {
+            text-align: end;
+        }
+
+        table td:nth-child(2) {
+            text-align: left;
+            padding-left: 10px;
+        }
     </style>
 </head>
 
 <body>
-    <h1>MAIANA</h1>
+    <h1>MAIANA<sup>&reg;</sup></h1>
     <div id="infobox">
         <div id="infotext">
         </div>
@@ -276,13 +289,15 @@
 
         document.getElementById('refresh').onclick = function () {
             get("/info").then(data => {
-                let output = "";
+                let output = "<table>";
                 for (const key in data) {
                     if (Object.hasOwnProperty.call(data, key)) {
                         const element = data[key];
-                        output += key + ": " + element + "<br>";
+                        output += "<tr><td>" + key + "</td>";
+                        output += "<td>" + element + "</td></tr>";
                     }
                 }
+                output += "</table>"
                 document.getElementById('infotext').innerHTML = output;
             });
             get("/wifi").then(data => {
