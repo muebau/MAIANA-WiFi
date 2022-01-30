@@ -38,8 +38,9 @@
             font-weight: 600;
         }
 
-        #infobox{
+        #infobox {
             display: block;
+            background-color: #15172b;
             border-radius: 20px;
             box-sizing: border-box;
             text-align: center;
@@ -103,13 +104,14 @@
             border-radius: 12px;
             text-align: center;
             height: 50px;
-            display: inline-block;
+            display: grid;
             margin-top: 20px;
             margin-bottom: 5px;
             background-color: #303245;
             border-color: #ddd;
             padding: 4px 20px 0;
             width: 100%;
+            align-items: center;
         }
 
         input[type=radio]:checked+label {
@@ -146,32 +148,32 @@
 <body>
     <h1>MAIANA</h1>
     <div id="infobox">
-        INFO BOX
-        <button type="button" id="refresh">refresh</button>
+        <div id="infotext">
+        </div>
+        <button type="button" id="refresh">load config</button>
     </div>
     <div>
-        
         <form>
             <fieldset>
                 <legend>WiFi settings</legend>
 
                 <div class="radioButtons">
                     <input type="radio" id="wifi-ap" name="wifi" value="ap" checked>
-                    <label for="wifi-ap">AP</label>
+                    <label for="wifi-ap">Access Point</label>
 
-                    <input type="radio" id="wifi-cli" name="wifi" value="cli">
-                    <label for="wifi-cli">client</label>
+                    <input type="radio" id="wifi-sta" name="wifi" value="sta">
+                    <label for="wifi-sta">Client</label>
                 </div>
 
-                <input type="text" id="wifi-ssid" name="ssid" value="MAIANA">
+                <input type="text" id="wifi-ssid" name="ssid" value="MAIANA" maxlength="32" required>
                 <label for="wifi-ssid">SSID</label>
 
-                <input type="text" id="wifi-pass" name="pass" value="" maxlength="63" required>
-                <label for="wifi-pass">password</label>
+                <input type="text" id="wifi-password" name="password" value="" maxlength="63" required>
+                <label for="wifi-password">password</label>
 
-                <button type="button" id="wifi-genpw">generate password</button>
+                <button type="button" id="wifi-genpw">Generate password</button>
 
-                <button type="button" id="wifi-set">set</button>
+                <button type="button" id="wifi-set">SET</button>
             </fieldset>
         </form>
     </div>
@@ -194,7 +196,7 @@
                 <input type="number" id="protocol-port" name="port" value="10110" min="1" max="65536">
                 <label for="protocol-port">PORT</label>
 
-                <button type="button" id="protocol-set">set</button>
+                <button type="button" id="protocol-set">SET</button>
             </fieldset>
         </form>
     </div>
@@ -203,35 +205,35 @@
             <fieldset>
                 <legend>Station data</legend>
 
-                <input type="text" id="maiana-mmsi" name="maiana-mmsi" value="" required>
-                <label for="maiana-mmsi">MMSI</label>
+                <input type="text" id="station-mmsi" name="station-mmsi" value="" pattern="[0-9]{9}" required>
+                <label for="station-mmsi">MMSI</label>
 
-                <input type="text" id="maiana-callsign" name="maiana-callsign" value="" required>
-                <label for="maiana-callsign">call sign</label>
+                <input type="text" id="station-callsign" name="station-callsign" value="" pattern="[0-9A-Z]" required>
+                <label for="station-callsign">call sign</label>
 
 
-                <select id="maiana-vesseltype">
-                    <option value="30">Fishing</option>
+                <select id="station-vesseltype">
                     <option value="34">Diving</option>
-                    <option value="36">Sailing</option>
+                    <option value="30">Fishing</option>
                     <option value="37" selected>Pleasure craft</option>
+                    <option value="36">Sailing</option>
                 </select>
-                <label for="maiana-vesseltype">vessel type</label>
+                <label for="station-vesseltype">vessel type</label>
 
 
-                <input type="number" id="maiana-loa" name="maiana-loa" value="" min="1" required>
-                <label for="maiana-loa">LOA (m)</label>
+                <input type="number" id="station-loa" name="station-loa" value="" min="1" required>
+                <label for="station-loa">LOA (m)</label>
 
-                <input type="number" id="maiana-beam" name="maiana-beam" value="" min="1" required>
-                <label for="maiana-beam">beam (m)</label>
+                <input type="number" id="station-beam" name="station-beam" value="" min="1" required>
+                <label for="station-beam">beam (m)</label>
 
-                <input type="number" id="maiana-portoffset" name="maiana-portoffset" value="" min="0" required>
-                <label for="maiana-portoffset">port offset (m)</label>
+                <input type="number" id="station-portoffset" name="station-portoffset" value="" min="0" required>
+                <label for="station-portoffset">port offset (m)</label>
 
-                <input type="number" id="maiana-bowoffset" name="maiana-bowoffset" value="" min="0" required>
-                <label for="maiana-bowoffset">bow offset (m)</label>
+                <input type="number" id="station-bowoffset" name="station-bowoffset" value="" min="0" required>
+                <label for="station-bowoffset">bow offset (m)</label>
 
-                <button type="button" id="maiana-set">set</button>
+                <button type="button" id="station-set">SET</button>
             </fieldset>
         </form>
     </div>
@@ -242,49 +244,67 @@
             return fetch(url).then(data => data.json());
         }
 
-        function setCheckbox() {
-            document.querySelector('input[name="protocol"],[value="tcp"]').checked = true;
-        }
-
         document.getElementById('wifi-set').onclick = function () {
             let type = document.querySelector('input[name="wifi"]:checked').value;
             let ssid = document.getElementById('wifi-ssid').value;
-            let password = document.getElementById('wifi-pass').value;
+            let password = document.getElementById('wifi-password').value;
 
             get("/wifi", { "type": type, "ssid": ssid, "password": password }).then(data => {
-                console.log(data);
             });
         };
         document.getElementById('wifi-genpw').onclick = function () {
-            document.getElementById('wifi-pass').value = Math.random().toString(36).substr(2, 16);
+            document.getElementById('wifi-password').value = Math.random().toString(36).substr(2, 16);
         };
 
         document.getElementById('protocol-set').onclick = function () {
-            let protocol = document.querySelector('input[name="protocol"]:checked').value;
+            let type = document.querySelector('input[name="protocol"]:checked').value;
             let port = document.getElementById('protocol-port').value;
 
-            get("/protocol", { "protocol": protocol, "port": port }).then(data => {
-                console.log(data);
+            get("/protocol", { "type": type, "port": port }).then(data => {
             });
         };
 
-        document.getElementById('maiana-set').onclick = function () {
-            let mmsi = document.getElementById('maiana-mmsi').value;
-            let callsign = document.getElementById('maiana-callsign').value;
-            let vesseltype = document.querySelector('input[name="maiana-vesseltype"]:checked').value;
-            let loa = document.getElementById('maiana-loa').value;
-            let beam = document.getElementById('maiana-beam').value;
-            let portoffset = document.getElementById('maiana-portoffset').value;
-            let bowoffset = document.getElementById('maiana-bowoffset').value;
+        document.getElementById('station-set').onclick = function () {
+            let mmsi = document.getElementById('station-mmsi').value;
+            let callsign = document.getElementById('station-callsign').value;
+            let vesseltype = document.getElementById('station-vesseltype').value;
+            let loa = document.getElementById('station-loa').value;
+            let beam = document.getElementById('station-beam').value;
+            let portoffset = document.getElementById('station-portoffset').value;
+            let bowoffset = document.getElementById('station-bowoffset').value;
 
-            get("/station", {"mmsi": mmsi, "callsign": callsign, "vesseltype": vesseltype, "loa": loa, "beam": beam, "portoffset": portoffset, "bowoffset": bowoffset }, callback).then(data => {
-                console.log(data);
+            get("/station", { "mmsi": mmsi, "callsign": callsign, "vesseltype": vesseltype, "loa": loa, "beam": beam, "portoffset": portoffset, "bowoffset": bowoffset }).then(data => {
             });
         };
 
         document.getElementById('refresh').onclick = function () {
+            get("/info").then(data => {
+                let output = "";
+                for (const key in data) {
+                    if (Object.hasOwnProperty.call(data, key)) {
+                        const element = data[key];
+                        output += key + ": " + element + "<br>";
+                    }
+                }
+                document.getElementById('infotext').innerHTML = output;
+            });
+            get("/wifi").then(data => {
+                document.getElementById('wifi-' + data.type).checked = true;
+                document.getElementById('wifi-ssid').value = data.ssid;
+                document.getElementById('wifi-password').value = data.password;
+            });
             get("/protocol").then(data => {
-                
+                document.getElementById('protocol-' + data.type).checked = true;
+                document.getElementById('protocol-port').value = data.port;
+            });
+            get("/station").then(data => {
+                document.getElementById('station-mmsi').value = data.mmsi;
+                document.getElementById('station-callsign').value = data.callsign;
+                document.getElementById('station-vesseltype').value = data.vesseltype;
+                document.getElementById('station-loa').value = data.loa;
+                document.getElementById('station-beam').value = data.beam;
+                document.getElementById('station-portoffset').value = data.portoffset;
+                document.getElementById('station-bowoffset').value = data.bowoffset;
             });
         };
     </script>
