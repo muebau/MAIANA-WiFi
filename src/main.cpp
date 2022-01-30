@@ -37,6 +37,24 @@ const char *PARAM_BOWOFFSET = "bowoffset";
 
 //general
 
+//read config
+//store config
+
+//start config mode
+//start normal operation
+
+//start TCP forward
+//stop TCP forward
+
+//start UDP forward
+//stop UDP forward
+
+//start WiFi AP
+//start WiFi cli
+
+//read from MAIANA
+//set config in MAIANA
+
 //scanWiFi
 void scanWiFi()
 {
