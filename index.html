@@ -73,9 +73,8 @@
         select {
             appearance: none;
             min-height: 50px;
-            position: center;
             width: 100%;
-            margin-top: 20px;
+            margin-bottom: 20px;
             background-color: #303245;
             border-radius: 12px;
             border: 0;
@@ -92,7 +91,7 @@
             min-height: 50px;
             position: center;
             width: 100%;
-            margin-top: 20px;
+            margin-bottom: 20px;
         }
 
         input[type=radio] {
@@ -165,11 +164,11 @@
                     <label for="wifi-sta">Client</label>
                 </div>
 
-                <input type="text" id="wifi-ssid" name="ssid" value="MAIANA" maxlength="32" required>
                 <label for="wifi-ssid">SSID</label>
+                <input type="text" id="wifi-ssid" name="ssid" value="MAIANA" maxlength="32" required>
 
-                <input type="text" id="wifi-password" name="password" value="" maxlength="63" required>
                 <label for="wifi-password">password</label>
+                <input type="text" id="wifi-password" name="password" value="" maxlength="63" required>
 
                 <button type="button" id="wifi-genpw">Generate password</button>
 
@@ -193,8 +192,8 @@
                     <label for="protocol-udp">UDP</label>
                 </div>
 
+                <label for="protocol-port">port</label>
                 <input type="number" id="protocol-port" name="port" value="10110" min="1" max="65536">
-                <label for="protocol-port">PORT</label>
 
                 <button type="button" id="protocol-set">SET</button>
             </fieldset>
@@ -205,33 +204,31 @@
             <fieldset>
                 <legend>Station data</legend>
 
-                <input type="text" id="station-mmsi" name="station-mmsi" value="" pattern="[0-9]{9}" required>
                 <label for="station-mmsi">MMSI</label>
+                <input type="text" id="station-mmsi" name="station-mmsi" value="" pattern="[0-9]{9}" required>
 
-                <input type="text" id="station-callsign" name="station-callsign" value="" pattern="[0-9A-Z]" required>
                 <label for="station-callsign">call sign</label>
+                <input type="text" id="station-callsign" name="station-callsign" value="" pattern="[0-9A-Z]" required>
 
-
+                <label for="station-vesseltype">vessel type</label>
                 <select id="station-vesseltype">
                     <option value="34">Diving</option>
                     <option value="30">Fishing</option>
                     <option value="37" selected>Pleasure craft</option>
                     <option value="36">Sailing</option>
                 </select>
-                <label for="station-vesseltype">vessel type</label>
 
-
+                <label for="station-loa">LOA (meter)</label>
                 <input type="number" id="station-loa" name="station-loa" value="" min="1" required>
-                <label for="station-loa">LOA (m)</label>
 
+                <label for="station-beam">beam (meter)</label>
                 <input type="number" id="station-beam" name="station-beam" value="" min="1" required>
-                <label for="station-beam">beam (m)</label>
 
+                <label for="station-portoffset">port offset (meter)</label>
                 <input type="number" id="station-portoffset" name="station-portoffset" value="" min="0" required>
-                <label for="station-portoffset">port offset (m)</label>
 
+                <label for="station-bowoffset">bow offset (meter)</label>
                 <input type="number" id="station-bowoffset" name="station-bowoffset" value="" min="0" required>
-                <label for="station-bowoffset">bow offset (m)</label>
 
                 <button type="button" id="station-set">SET</button>
             </fieldset>
