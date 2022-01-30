@@ -6,6 +6,17 @@
 
 //webserver
 #include <WiFi.h>
+
+#define USE_LittleFS
+
+#include <FS.h>
+#ifdef USE_LittleFS
+  #define SPIFFS LITTLEFS
+  #include <LITTLEFS.h> 
+#else
+  #include <SPIFFS.h>
+#endif
+
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
@@ -55,9 +66,9 @@ struct info
   String confogTimeout;
 } infoSettings;
 
-
-
 //webserver
+
+#define SPIFFS LITTLEFS
 
 AsyncWebServer server(80);
 
@@ -209,6 +220,23 @@ void setup()
   WiFi.mode(WIFI_STA);
 
   //webserver
+  // Initialize LittleFS
+  if (!LITTLEFS.begin(false /* false: Do not format if mount failed */))
+  {
+    Serial.println("Failed to mount LittleFS");
+    if (!LITTLEFS.begin(true /* true: format */))
+    {
+      Serial.println("Failed to format LittleFS");
+    }
+    else
+    {
+      Serial.println("LittleFS formatted successfully");
+    }
+  }
+  else
+  { // Initial mount success
+  }
+
   WiFi.begin(ssidWebserver, passwordWebserver);
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
@@ -220,7 +248,7 @@ void setup()
   Serial.println(WiFi.localIP());
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/plain", "Hello, world"); });
+            { request->send(SPIFFS, "index.html", "text/html"); });
 
   // GET request /info
   server.on("/info", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -276,7 +304,7 @@ void setup()
                 stationSettings.loa = request->getParam(PARAM_LOA)->value().toInt();
                 stationSettings.beam = request->getParam(PARAM_BEAM)->value().toInt();
                 stationSettings.bowoffset = request->getParam(PARAM_BOWOFFSET)->value().toInt();
-                stationSettings.portoffset = request -> getParam(PARAM_PORTOFFSET)->value().toInt();
+                stationSettings.portoffset = request->getParam(PARAM_PORTOFFSET)->value().toInt();
               }
               else
               {
