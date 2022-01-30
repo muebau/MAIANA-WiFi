@@ -13,6 +13,39 @@
 
 //general
 
+struct wifi
+{
+  String type;
+  String ssid;
+  String password;
+};
+
+struct protocol
+{
+  String type;
+  int port;
+};
+
+struct station
+{
+  String mmsi;
+  String callsing;
+  int vesseltype;
+  int loa;
+  int beam;
+  int portoffset;
+  int bowoffset;
+};
+
+struct info
+{
+  String firmware = "1.1";
+  String ip;
+  String confogTimeout;
+};
+
+
+
 //webserver
 
 AsyncWebServer server(80);
