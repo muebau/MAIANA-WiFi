@@ -6,6 +6,9 @@
 
 
 //webserver
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 //---------------global variables and definitions-------------
 
