@@ -16,6 +16,14 @@
 
 //webserver
 
+AsyncWebServer server(80);
+
+const char* ssidWebserver = "ulfnet";
+const char* passwordWebserver = "!=hierbinichmenschhierwillichsein44100$%";
+
+const char* PARAM_MESSAGE = "message";
+
+
 //---------------functions-----------------------------
 
 //general
@@ -48,11 +56,45 @@ void scanWiFi()
 
 //webserver
 
+void notFound(AsyncWebServerRequest *request) {
+    request->send(404, "text/plain", "Not found");
+}
+
+
 void setup() {
   
   //general
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
 
   //webserver
+  WiFi.begin(ssidWebserver, passwordWebserver);
+    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+        Serial.printf("WiFi Failed!\n");
+        return;
+    }
+
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
+
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "text/plain", "Hello, world");
+    });
+
+    // Send a GET request to <IP>/get?message=<message>
+    server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
+        String message;
+        if (request->hasParam(PARAM_MESSAGE)) {
+            message = request->getParam(PARAM_MESSAGE)->value();
+        } else {
+            message = "No message sent";
+        }
+        request->send(200, "text/plain", "Hello, GET: " + message);
+    });
+
+    server.onNotFound(notFound);
+
+    server.begin();
 }
 
 void loop()
