@@ -6,7 +6,17 @@
 
 //webserver
 #include <WiFi.h>
-#include <LITTLEFS.h>
+
+#define USE_LittleFS
+
+#include <FS.h>
+#ifdef USE_LittleFS
+  #define SPIFFS LITTLEFS
+  #include <LITTLEFS.h> 
+#else
+  #include <SPIFFS.h>
+#endif
+
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
@@ -159,7 +169,7 @@ void setup()
   Serial.println(WiFi.localIP());
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(SPIFFS, "/index.html", "text/html"); });
+            { request->send(SPIFFS, "index.html", "text/html"); });
 
   // GET request /info
   server.on("/info", HTTP_GET, [](AsyncWebServerRequest *request)
