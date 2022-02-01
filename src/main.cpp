@@ -11,10 +11,10 @@
 
 #include <FS.h>
 #ifdef USE_LittleFS
-  #define SPIFFS LITTLEFS
-  #include <LITTLEFS.h> 
+#define SPIFFS LITTLEFS
+#include <LITTLEFS.h>
 #else
-  #include <SPIFFS.h>
+#include <SPIFFS.h>
 #endif
 
 #include <AsyncTCP.h>
@@ -61,10 +61,22 @@ struct system
 
 struct info
 {
-  String firmware = "1.1";
   String ip;
-  String confogTimeout;
-} infoSettings;
+  String configTimeout;
+} infoState;
+
+struct txState
+{
+  String hardwarePresent;
+  String hardwareSwitch;
+  String softwareSwitch;
+  String stationData;
+  String status;
+  String channelALast;
+  String channelBLast;
+  String channelANoise;
+  String channelBNoise;
+} txState;
 
 //webserver
 
@@ -140,17 +152,19 @@ String getValue(String data, char separator, int index)
 {
   int found = 0;
   int strIndex[] = {0, -1};
-  int maxIndex = data.length()-1;
+  int maxIndex = data.length() - 1;
 
-  for(int i=0; i<=maxIndex && found<=index; i++){
-    if(data.charAt(i)==separator || i==maxIndex){
-        found++;
-        strIndex[0] = strIndex[1]+1;
-        strIndex[1] = (i == maxIndex) ? i+1 : i;
+  for (int i = 0; i <= maxIndex && found <= index; i++)
+  {
+    if (data.charAt(i) == separator || i == maxIndex)
+    {
+      found++;
+      strIndex[0] = strIndex[1] + 1;
+      strIndex[1] = (i == maxIndex) ? i + 1 : i;
     }
   }
 
-  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
+  return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
 //PAISTN
@@ -159,51 +173,60 @@ void stationDataToStruct(String input)
   stationSettings.mmsi = getValue(input, ',', 1);
   stationSettings.vesselname = getValue(input, ',', 2);
   stationSettings.callsign = getValue(input, ',', 3);
-  stationSettings.vesseltype = getValue(input, ',', 4);
-  stationSettings.loa = getValue(input, ',', 5);
-  stationSettings.beam = getValue(input, ',', 6);
-  stationSettings.portoffset = getValue(input, ',', 7);
-  stationSettings.bowoffset = getValue(getValue(input, '*', 0), ',', 8);
+  stationSettings.vesseltype = getValue(input, ',', 4).toInt();
+  stationSettings.loa = getValue(input, ',', 5).toInt();
+  stationSettings.beam = getValue(input, ',', 6).toInt();
+  stationSettings.portoffset = getValue(input, ',', 7).toInt();
+  stationSettings.bowoffset = getValue(getValue(input, '*', 0), ',', 8).toInt();
 }
 
 //PAISYS
 void systemDataToStruct(String input)
 {
-  //TODO: check length to reflect versions
   systemSettings.hardwareRevision = getValue(input, ',', 1);
   systemSettings.firmwareRevision = getValue(input, ',', 2);
   systemSettings.serialNumber = getValue(input, ',', 3);
-  ///-------------------
   systemSettings.MCUtype = getValue(input, ',', 4);
   systemSettings.breakoutGeneration = getValue(input, ',', 5);
   systemSettings.bootloader = getValue(getValue(input, ',', 6), '*', 0);
-//SKdata.update({"MAIANA.hardwareRevision":data3[1],"MAIANA.firmwareRevision":data3[2],"MAIANA.serialNumber":data3[3],"MAIANA.MCUtype":data3[4],"MAIANA.breakoutGeneration":data3[5],"MAIANA.bootloader":data3[6]})
-//SKdata.update({"MAIANA.hardwareRevision":data3[1],"MAIANA.firmwareRevision":data3[2],"MAIANA.serialNumber":data3[3],"MAIANA.MCUtype":data3[4],"MAIANA.breakoutGeneration":'',"MAIANA.bootloader":''})
-//SKdata.update({"MAIANA.hardwareRevision":data3[1],"MAIANA.firmwareRevision":data3[2],"MAIANA.serialNumber":data3[3],"MAIANA.MCUtype":'',"MAIANA.breakoutGeneration":'',"MAIANA.bootloader":''})
 }
 
-//$PAITXCFG':
+//PAITXCFG
 void txCfgToStruct(String input)
 {
-//hardwarePresent":int(data3[1])
-//hardwareSwitch":int(data3[2])
-//softwareSwitch":int(data3[3])
-//stationData":int(data3[4])
-//status":int(data3[5])
+  txState.hardwarePresent = getValue(input, ',', 1);
+  txState.hardwareSwitch = getValue(input, ',', 2);
+  txState.softwareSwitch = getValue(input, ',', 3);
+  txState.stationData = getValue(input, ',', 4);
+  txState.status = getValue(input, ',', 5);
 }
 
-//#$PAITX,A,18*1C
+//PAITX,A,18*1C
 void txToStruct(String input)
 {
-//channel"+data3[1]
-//transmittedMessageType":data3[2]
+  if (getValue(input, ',', 1).startsWith("A"))
+  {
+    txState.channelALast = getValue(input, ',', 2);
+  }
+
+  if (getValue(input, ',', 1).startsWith("B"))
+  {
+    txState.channelBLast = getValue(input, ',', 2);
+  }
 }
 
-//#$PAINF,A,0x20*5B
+//PAINF,A,0x20*5B
 void noiseFloorToStruct(String input)
 {
-//channel"+data3[1]
-//noiseValue = int(data3[2],16)
+  if (getValue(input, ',', 1).startsWith("A"))
+  {
+    txState.channelANoise = getValue(input, ',', 2);
+  }
+
+  if (getValue(input, ',', 1).startsWith("B"))
+  {
+    txState.channelBNoise = getValue(input, ',', 2);
+  }
 }
 
 //webserver
@@ -212,11 +235,133 @@ void notFound(AsyncWebServerRequest *request)
   request->send(404, "text/plain", "Not found");
 }
 
+void checkLine(String line)
+{
+  Serial.println(line);
+  if (line.startsWith("$PAI"))
+  {
+
+    String msg = getValue(line, '*', 0);
+    String msgchecksum = getValue(line, '*', 1);
+    unsigned int len = msg.length() - 1;
+    char checksum = 0;
+
+    //skip the first character
+    while (len > 0)
+    {
+      //XOR
+      checksum ^= msg.charAt(len);
+      len--;
+    }
+
+    if (String(checksum, HEX).equals(msgchecksum))
+    {
+
+      if (line.startsWith("$PAISTN"))
+      {
+        stationDataToStruct(line);
+      }
+
+      if (line.startsWith("$PAISYS"))
+      {
+        systemDataToStruct(line);
+      }
+
+      if (line.startsWith("$PAITXCFG"))
+      {
+        txCfgToStruct(line);
+      }
+
+      if (line.startsWith("$PAITX"))
+      {
+        txToStruct(line);
+      }
+
+      if (line.startsWith("$PAINF"))
+      {
+        noiseFloorToStruct(line);
+      }
+    }
+  }
+}
+
+void testParsing()
+{
+  checkLine("$PAINF,A,0x20*5B");
+  checkLine("$PAINF,B,0x23*5B");
+  checkLine("$PAITX,A,18*1C");
+  checkLine("$PAITX,B,66*16");
+  checkLine("$PAISYS,11.3.0,4.0.0,,STM32L422,1,1*05");
+  checkLine("$PAISTN,987654321,NAUT,,37,0,0,0,0*2A");
+  checkLine("$PAITXCFG,1,0,1,1,0*0");
+
+  Serial.print("wifiSettings.type = ");
+  Serial.println(wifiSettings.type);
+  Serial.print("wifiSettings.ssid = ");
+  Serial.println(wifiSettings.ssid);
+  Serial.print("wifiSettings.password = ");
+  Serial.println(wifiSettings.password);
+
+  Serial.print("protocolSettings.type = ");
+  Serial.println(protocolSettings.type);
+  Serial.print("protocolSettings.port = ");
+  Serial.println(protocolSettings.port);
+
+  Serial.print("stationSettings.mmsi = ");
+  Serial.println(stationSettings.mmsi);
+  Serial.print("stationSettings.callsign = ");
+  Serial.println(stationSettings.callsign);
+  Serial.print("stationSettings.vesselname = ");
+  Serial.println(stationSettings.vesselname);
+  Serial.print("stationSettings.vesseltype = ");
+  Serial.println(stationSettings.vesseltype);
+  Serial.print("stationSettings.loa = ");
+  Serial.println(stationSettings.loa);
+  Serial.print("stationSettings.beam = ");
+  Serial.println(stationSettings.beam);
+  Serial.print("stationSettings.portoffset = ");
+  Serial.println(stationSettings.portoffset);
+  Serial.print("stationSettings.bowoffset = ");
+  Serial.println(stationSettings.bowoffset);
+
+  Serial.print("systemSettings.hardwareRevision = ");
+  Serial.println(systemSettings.hardwareRevision);
+  Serial.print("systemSettings.firmwareRevision = ");
+  Serial.println(systemSettings.firmwareRevision);
+  Serial.print("systemSettings.serialNumber = ");
+  Serial.println(systemSettings.serialNumber);
+  Serial.print("systemSettings.MCUtype = ");
+  Serial.println(systemSettings.MCUtype);
+  Serial.print("systemSettings.breakoutGeneration = ");
+  Serial.println(systemSettings.breakoutGeneration);
+  Serial.print("systemSettings.bootloader = ");
+  Serial.println(systemSettings.bootloader);
+
+  Serial.print("txState.hardwarePresent = ");
+  Serial.println(txState.hardwarePresent);
+  Serial.print("txState.hardwareSwitch = ");
+  Serial.println(txState.hardwareSwitch);
+  Serial.print("txState.softwareSwitch = ");
+  Serial.println(txState.softwareSwitch);
+  Serial.print("txState.stationData = ");
+  Serial.println(txState.stationData);
+  Serial.print("txState.status = ");
+  Serial.println(txState.status);
+  Serial.print("txState.channelALast = ");
+  Serial.println(txState.channelALast);
+  Serial.print("txState.channelBLast = ");
+  Serial.println(txState.channelBLast);
+  Serial.print("txState.channelANoise = ");
+  Serial.println(txState.channelANoise);
+  Serial.print("txState.channelBNoise = ");
+  Serial.println(txState.channelBNoise);
+}
+
 void setup()
 {
-
   //general
   Serial.begin(115200);
+  testParsing();
   WiFi.mode(WIFI_STA);
 
   //webserver
