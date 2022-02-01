@@ -42,6 +42,16 @@ struct station
   int bowoffset;
 } stationSettings;
 
+struct system
+{
+  String hardwareRevision;
+  String firmwareRevision;
+  String serialNumber;
+  String MCUtype;
+  String breakoutGeneration;
+  String bootloader;
+} systemSettings;
+
 struct info
 {
   String firmware = "1.1";
@@ -117,8 +127,77 @@ void scanWiFi()
   serializeJson(doc, Serial);
 }
 
-//webserver
+String getValue(String data, char separator, int index)
+{
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length()-1;
 
+  for(int i=0; i<=maxIndex && found<=index; i++){
+    if(data.charAt(i)==separator || i==maxIndex){
+        found++;
+        strIndex[0] = strIndex[1]+1;
+        strIndex[1] = (i == maxIndex) ? i+1 : i;
+    }
+  }
+
+  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
+
+//PAISTN
+void stationDataToStruct(String input)
+{
+  stationSettings.mmsi = getValue(input, ',', 1);
+  stationSettings.vesselname = getValue(input, ',', 2);
+  stationSettings.callsign = getValue(input, ',', 3);
+  stationSettings.vesseltype = getValue(input, ',', 4);
+  stationSettings.loa = getValue(input, ',', 5);
+  stationSettings.beam = getValue(input, ',', 6);
+  stationSettings.portoffset = getValue(input, ',', 7);
+  stationSettings.bowoffset = getValue(getValue(input, '*', 0), ',', 8);
+}
+
+//PAISYS
+void systemDataToStruct(String input)
+{
+  //TODO: check length to reflect versions
+  systemSettings.hardwareRevision = getValue(input, ',', 1);
+  systemSettings.firmwareRevision = getValue(input, ',', 2);
+  systemSettings.serialNumber = getValue(input, ',', 3);
+  ///-------------------
+  systemSettings.MCUtype = getValue(input, ',', 4);
+  systemSettings.breakoutGeneration = getValue(input, ',', 5);
+  systemSettings.bootloader = getValue(getValue(input, ',', 6), '*', 0);
+//SKdata.update({"MAIANA.hardwareRevision":data3[1],"MAIANA.firmwareRevision":data3[2],"MAIANA.serialNumber":data3[3],"MAIANA.MCUtype":data3[4],"MAIANA.breakoutGeneration":data3[5],"MAIANA.bootloader":data3[6]})
+//SKdata.update({"MAIANA.hardwareRevision":data3[1],"MAIANA.firmwareRevision":data3[2],"MAIANA.serialNumber":data3[3],"MAIANA.MCUtype":data3[4],"MAIANA.breakoutGeneration":'',"MAIANA.bootloader":''})
+//SKdata.update({"MAIANA.hardwareRevision":data3[1],"MAIANA.firmwareRevision":data3[2],"MAIANA.serialNumber":data3[3],"MAIANA.MCUtype":'',"MAIANA.breakoutGeneration":'',"MAIANA.bootloader":''})
+}
+
+//$PAITXCFG':
+void txCfgToStruct(String input)
+{
+//hardwarePresent":int(data3[1])
+//hardwareSwitch":int(data3[2])
+//softwareSwitch":int(data3[3])
+//stationData":int(data3[4])
+//status":int(data3[5])
+}
+
+//#$PAITX,A,18*1C
+void txToStruct(String input)
+{
+//channel"+data3[1]
+//transmittedMessageType":data3[2]
+}
+
+//#$PAINF,A,0x20*5B
+void noiseFloorToStruct(String input)
+{
+//channel"+data3[1]
+//noiseValue = int(data3[2],16)
+}
+
+//webserver
 void notFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "Not found");
