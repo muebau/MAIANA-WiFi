@@ -7,15 +7,8 @@
 //webserver
 #include <WiFi.h>
 
-#define USE_LittleFS
-
 #include <FS.h>
-#ifdef USE_LittleFS
-#define SPIFFS LITTLEFS
-#include <LITTLEFS.h>
-#else
 #include <SPIFFS.h>
-#endif
 
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -79,8 +72,6 @@ struct txState
 } txState;
 
 //webserver
-
-#define SPIFFS LITTLEFS
 
 AsyncWebServer server(80);
 
@@ -365,22 +356,12 @@ void setup()
   WiFi.mode(WIFI_STA);
 
   //webserver
-  // Initialize LittleFS
-  if (!LITTLEFS.begin(false /* false: Do not format if mount failed */))
-  {
-    Serial.println("Failed to mount LittleFS");
-    if (!LITTLEFS.begin(true /* true: format */))
-    {
-      Serial.println("Failed to format LittleFS");
-    }
-    else
-    {
-      Serial.println("LittleFS formatted successfully");
-    }
+  // Initialize spiffs
+  if(!SPIFFS.begin()){
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        return;
   }
-  else
-  { // Initial mount success
-  }
+
 
   WiFi.begin(ssidWebserver, passwordWebserver);
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
@@ -393,7 +374,7 @@ void setup()
   Serial.println(WiFi.localIP());
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(SPIFFS, "index.html", "text/html"); });
+            {request->send(SPIFFS, "/index.html", "text/html");});
 
   // GET request /info
   server.on("/info", HTTP_GET, [](AsyncWebServerRequest *request)
