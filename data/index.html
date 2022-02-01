@@ -169,6 +169,26 @@
     <div id="infobox">
         <div id="infotext">
         </div>
+            <table>
+                <tr>
+                    <td>
+                        <label for="noiseChannelA">Noise channel A:</label>
+                    </td>
+                    <td>
+                        <meter id="noiseChannelA" min="0" max="100" low="33" high="66" value="32"></meter><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="noiseChannelB">Noise channel B:</label>
+                    </td>
+                    <td>
+                        <meter id="noiseChannelB" min="0" max="100" low="33" high="66" value="32"></meter><br>
+                    </td>
+                </tr>
+            </table>
+        ✅⛔️
+
         <button type="button" id="toggle-tx">toggle TX</button>
         <button type="button" id="refresh">load config</button>
     </div>
@@ -306,7 +326,21 @@
         };
 
         function refresh_info() {
+            /*
             get("/info").then(data => {
+                let output = "<table>";
+                for (const key in data) {
+                    if (Object.hasOwnProperty.call(data, key)) {
+                        const element = data[key];
+                        output += "<tr><td>" + key + "</td>";
+                        output += "<td>" + element + "</td></tr>";
+                    }
+                }
+                output += "</table>"
+                document.getElementById('infotext').innerHTML = output;
+            });
+            */
+            get("/txstate").then(data => {
                 let output = "<table>";
                 for (const key in data) {
                     if (Object.hasOwnProperty.call(data, key)) {

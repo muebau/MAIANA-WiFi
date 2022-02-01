@@ -8,3 +8,5 @@ info
 station
 wifi
 scan
+gps.dump.txt
+txstate

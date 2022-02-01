@@ -13,6 +13,8 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+#define DEBUG(X) Serial.print(__LINE__); Serial.print(": "); Serial.println(X)
+
 //---------------global variables and definitions-------------
 
 //general
@@ -56,6 +58,8 @@ struct info
 {
   String ip;
   String configTimeout;
+  String time;
+  String date;
 } infoState;
 
 struct txState
@@ -66,7 +70,9 @@ struct txState
   String stationData;
   String status;
   String channelALast;
+  String channelALastTime;
   String channelBLast;
+  String channelBLastTime;
   String channelANoise;
   String channelBNoise;
 } txState;
@@ -158,6 +164,16 @@ String getValue(String data, char separator, int index)
   return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
+//GPRMC
+void gpsTimeToStruct(String input)
+{
+  if(getValue(input, ',', 2) == "A")
+  {
+    infoState.time = getValue(getValue(input, ',', 1), '.', 0);
+    infoState.date = getValue(input, ',', 9);
+  }
+}
+
 //PAISTN
 void stationDataToStruct(String input)
 {
@@ -168,7 +184,7 @@ void stationDataToStruct(String input)
   stationSettings.loa = getValue(input, ',', 5).toInt();
   stationSettings.beam = getValue(input, ',', 6).toInt();
   stationSettings.portoffset = getValue(input, ',', 7).toInt();
-  stationSettings.bowoffset = getValue(getValue(input, '*', 0), ',', 8).toInt();
+  stationSettings.bowoffset = getValue(getValue(input, ',', 8), '*', 0).toInt();
 }
 
 //PAISYS
@@ -189,7 +205,7 @@ void txCfgToStruct(String input)
   txState.hardwareSwitch = getValue(input, ',', 2);
   txState.softwareSwitch = getValue(input, ',', 3);
   txState.stationData = getValue(input, ',', 4);
-  txState.status = getValue(input, ',', 5);
+  txState.status = getValue(getValue(input, ',', 5), '*', 0);
 }
 
 //PAITX,A,18*1C
@@ -197,12 +213,14 @@ void txToStruct(String input)
 {
   if (getValue(input, ',', 1).startsWith("A"))
   {
-    txState.channelALast = getValue(input, ',', 2);
+    txState.channelALast = getValue(getValue(input, ',', 2), '*', 0);
+    txState.channelALastTime = infoState.time;
   }
 
   if (getValue(input, ',', 1).startsWith("B"))
   {
-    txState.channelBLast = getValue(input, ',', 2);
+    txState.channelBLast = getValue(getValue(input, ',', 2), '*', 0);
+    txState.channelBLastTime = infoState.time;
   }
 }
 
@@ -211,12 +229,12 @@ void noiseFloorToStruct(String input)
 {
   if (getValue(input, ',', 1).startsWith("A"))
   {
-    txState.channelANoise = getValue(input, ',', 2);
+    txState.channelANoise = getValue(getValue(input, ',', 2), '*', 0);
   }
 
   if (getValue(input, ',', 1).startsWith("B"))
   {
-    txState.channelBNoise = getValue(input, ',', 2);
+    txState.channelBNoise = getValue(getValue(input, ',', 2), '*', 0);
   }
 }
 
@@ -228,12 +246,11 @@ void notFound(AsyncWebServerRequest *request)
 
 void checkLine(String line)
 {
-  Serial.println(line);
-  if (line.startsWith("$PAI"))
+  if (line.startsWith("$PAI") || line.startsWith("$GNRMC"))
   {
-
     String msg = getValue(line, '*', 0);
     String msgchecksum = getValue(line, '*', 1);
+    msgchecksum.toLowerCase();
     unsigned int len = msg.length() - 1;
     char checksum = 0;
 
@@ -245,9 +262,14 @@ void checkLine(String line)
       len--;
     }
 
-    if (String(checksum, HEX).equals(msgchecksum))
+    String checksumStr = String(checksum, HEX);
+    if(checksumStr.length() < 2)
     {
+      checksumStr = "0" + checksumStr;
+    }
 
+    if (checksumStr.equals(msgchecksum))
+    {
       if (line.startsWith("$PAISTN"))
       {
         stationDataToStruct(line);
@@ -272,6 +294,11 @@ void checkLine(String line)
       {
         noiseFloorToStruct(line);
       }
+
+      if (line.startsWith("$GNRMC"))
+      {
+        gpsTimeToStruct(line);
+      }
     }
   }
 }
@@ -282,10 +309,11 @@ void testParsing()
   checkLine("$PAINF,B,0x23*5B");
   checkLine("$PAITX,A,18*1C");
   checkLine("$PAITX,B,66*16");
-  checkLine("$PAISYS,11.3.0,4.0.0,,STM32L422,1,1*05");
-  checkLine("$PAISTN,987654321,NAUT,,37,0,0,0,0*2A");
-  checkLine("$PAITXCFG,1,0,1,1,0*0");
-
+  checkLine("$PAISYS,11.3.0,4.0.0,0537714,STM32L422,4,2*30");
+  checkLine("$PAISTN,987654321,NAUT,CALLSIGN23,37,23,42,34,84*36");
+  checkLine("$PAITXCFG,2,3,4,5,6*0C");
+  checkLine("$GNRMC,230121.000,A,5130.7862,N,00733.3069,E,0.09,117.11,010222,,,A,V*03");
+/*
   Serial.print("wifiSettings.type = ");
   Serial.println(wifiSettings.type);
   Serial.print("wifiSettings.ssid = ");
@@ -297,7 +325,7 @@ void testParsing()
   Serial.println(protocolSettings.type);
   Serial.print("protocolSettings.port = ");
   Serial.println(protocolSettings.port);
-
+*/
   Serial.print("stationSettings.mmsi = ");
   Serial.println(stationSettings.mmsi);
   Serial.print("stationSettings.callsign = ");
@@ -315,6 +343,8 @@ void testParsing()
   Serial.print("stationSettings.bowoffset = ");
   Serial.println(stationSettings.bowoffset);
 
+  Serial.println("====================");
+
   Serial.print("systemSettings.hardwareRevision = ");
   Serial.println(systemSettings.hardwareRevision);
   Serial.print("systemSettings.firmwareRevision = ");
@@ -327,6 +357,8 @@ void testParsing()
   Serial.println(systemSettings.breakoutGeneration);
   Serial.print("systemSettings.bootloader = ");
   Serial.println(systemSettings.bootloader);
+
+  Serial.println("====================");
 
   Serial.print("txState.hardwarePresent = ");
   Serial.println(txState.hardwarePresent);
