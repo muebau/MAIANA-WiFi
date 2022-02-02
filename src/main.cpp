@@ -71,8 +71,10 @@ struct txState
   String status;
   String channelALast;
   String channelALastTime;
+  String channelALastDate;
   String channelBLast;
   String channelBLastTime;
+  String channelBLastDate;
   String channelANoise;
   String channelBNoise;
 } txState;
@@ -215,12 +217,14 @@ void txToStruct(String input)
   {
     txState.channelALast = getValue(getValue(input, ',', 2), '*', 0);
     txState.channelALastTime = infoState.time;
+    txState.channelALastDate = infoState.date;
   }
 
   if (getValue(input, ',', 1).startsWith("B"))
   {
     txState.channelBLast = getValue(getValue(input, ',', 2), '*', 0);
     txState.channelBLastTime = infoState.time;
+    txState.channelBLastDate = infoState.date;
   }
 }
 
@@ -246,7 +250,7 @@ void notFound(AsyncWebServerRequest *request)
 
 void checkLine(String line)
 {
-  if (line.startsWith("$PAI") || line.startsWith("$GNRMC"))
+  if (line.startsWith("$PAI") || line.substring(3).startsWith("RMC"))
   {
     String msg = getValue(line, '*', 0);
     String msgchecksum = getValue(line, '*', 1);
@@ -326,6 +330,19 @@ void testParsing()
   Serial.print("protocolSettings.port = ");
   Serial.println(protocolSettings.port);
 */
+  Serial.println("====================");
+
+  Serial.print("infoState.ip = ");
+  Serial.println(infoState.ip);
+  Serial.print("infoState.configTimeout = ");
+  Serial.println(infoState.configTimeout);
+  Serial.print("infoState.time = ");
+  Serial.println(infoState.time);
+  Serial.print("infoState.date = ");
+  Serial.println(infoState.date);
+
+  Serial.println("====================");
+
   Serial.print("stationSettings.mmsi = ");
   Serial.println(stationSettings.mmsi);
   Serial.print("stationSettings.callsign = ");

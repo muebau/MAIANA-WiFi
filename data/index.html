@@ -169,25 +169,26 @@
     <div id="infobox">
         <div id="infotext">
         </div>
-            <table>
-                <tr>
-                    <td>
-                        <label for="noiseChannelA">Noise channel A:</label>
-                    </td>
-                    <td>
-                        <meter id="noiseChannelA" min="0" max="100" low="33" high="66" value="32"></meter><br>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="noiseChannelB">Noise channel B:</label>
-                    </td>
-                    <td>
-                        <meter id="noiseChannelB" min="0" max="100" low="33" high="66" value="32"></meter><br>
-                    </td>
-                </tr>
-            </table>
-        ✅⛔️
+        <table>
+            <tr>
+                <td>
+                    <label for="noiseChannelA">Noise channel A:</label>
+                </td>
+                <td>
+                    <meter id="noiseChannelA" min="0" max="100" optimum=10 low="33" high="66" value="80"
+                        title="dB">80</meter> 80 <br>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="noiseChannelB">Noise channel B:</label>
+                </td>
+                <td>
+                    <meter id="noiseChannelB" min="0" max="100" optimum=10 low="33" high="66" value="32"
+                        title="dB">32</meter> 32<br>
+                </td>
+            </tr>
+        </table>
 
         <button type="button" id="toggle-tx">toggle TX</button>
         <button type="button" id="refresh">load config</button>
@@ -258,7 +259,8 @@
                 <input type="text" id="station-callsign" name="station-callsign" value="" pattern="[0-9A-Z]" required>
 
                 <label for="station-vesselname">vessel name</label>
-                <input type="text" id="station-vesselname" name="station-vesselname" value="" pattern="[0-9A-Za-z]" required>
+                <input type="text" id="station-vesselname" name="station-vesselname" value="" pattern="[0-9A-Za-z]"
+                    required>
 
                 <label for="station-vesseltype">vessel type</label>
                 <select id="station-vesseltype">
@@ -325,33 +327,99 @@
             });
         };
 
+        function dateFromDigits(t, d) {
+            return new Date("20" + d.substring(4, 6) + "-" + d.substring(2, 4) + "-" + d.substring(0, 2) + "T" + t.substring(0, 2) + ":" + t.substring(2, 4) + ":" + t.substring(4, 6) + "Z");
+        }
+
         function refresh_info() {
+            Promise.all([
+                get("/info"),
+                get("/txstate")]).
+                then((results) => {
+                    let infoState = results[0];
+                    let txState = results[1];
+                    let r, c;
+                    const table = document.createElement("table");
+
+                    //TIME
+                    time = dateFromDigits(infoState.time, infoState.date);
+
+                    r = table.insertRow();
+                    r.insertCell().appendChild(document.createTextNode("GPS time (local)"));
+
+                    e = document.createElement("time");
+                    e.setAttribute("datetime", time.toISOString());
+                    e.appendChild(document.createTextNode(time.toLocaleString()));
+                    r.insertCell().appendChild(e);
+
+                    r = table.insertRow();
+                    r.insertCell().appendChild(document.createTextNode("GPS time (UTC)"));
+
+                    e = document.createElement("time");
+                    e.setAttribute("datetime", time.toISOString());
+                    e.appendChild(document.createTextNode(time.toISOString()));
+                    r.insertCell().appendChild(e);
+
+                    //NOISE
+                    let t = infoState.time;
+                    let d = infoState.date;
+                    time = new Date("20" + d.substring(4, 6) + "-" + d.substring(2, 4) + "-" + d.substring(0, 2) + "T" + t.substring(0, 2) + ":" + t.substring(2, 4) + ":" + t.substring(4, 6) + "Z");
+
+                    r = table.insertRow();
+                    r.insertCell().appendChild(document.createTextNode("GPS time (local)"));
+
+                    e = document.createElement("time");
+                    e.setAttribute("datetime", time.toISOString());
+                    e.appendChild(document.createTextNode(time.toLocaleString()));
+                    r.insertCell().appendChild(e);
+
+                    r = table.insertRow();
+                    r.insertCell().appendChild(document.createTextNode("GPS time (UTC)"));
+
+                    e = document.createElement("time");
+                    e.setAttribute("datetime", time.toISOString());
+                    e.appendChild(document.createTextNode(time.toISOString()));
+                    r.insertCell().appendChild(e);
+                    document.getElementById('infotext').innerHTML = "";
+                    document.getElementById('infotext').appendChild(table);
+                });
             /*
-            get("/info").then(data => {
-                let output = "<table>";
-                for (const key in data) {
-                    if (Object.hasOwnProperty.call(data, key)) {
-                        const element = data[key];
-                        output += "<tr><td>" + key + "</td>";
-                        output += "<td>" + element + "</td></tr>";
-                    }
-                }
-                output += "</table>"
-                document.getElementById('infotext').innerHTML = output;
-            });
+                                let output = "<table>";
+                                for (const key in data) {
+                                    if (Object.hasOwnProperty.call(data, key)) {
+                                        const element = data[key];
+                                        output += "<tr><td>" + key + "</td>";
+                                        output += "<td>" + element + "</td></tr>";
+                                    }
+                                }
+                                output += "</table>"
+                                document.getElementById('infotext').innerHTML = output;
+            
+                                let output = "<table>";
+                                for (const key in data) {
+                                    if (Object.hasOwnProperty.call(data, key)) {
+                                        const element = data[key];
+                                        output += "<tr><td>" + key + "</td>";
+                                        if (element == 0) {
+                                            output += "<td>⛔️</td></tr>";
+                                        } else if (element == 1) {
+                                            output += "<td>✅</td></tr>";
+                                        }
+                                        else {
+                                            output += "<td>" + element + "</td></tr>";
+                                        }
+                                    }
+                                }
+                                data.networks.forEach(e => {
+                                    r = t.insertRow();
+                                    r.onclick = function () {
+                                        document.getElementById("wifi-ssid").value = e[0];
+                                    };
+                                    r.insertCell().appendChild(document.createTextNode(e[0]));
+                                    r.insertCell().appendChild(document.createTextNode(e[1]));
+                                    r.insertCell().appendChild(document.createTextNode(e[2] ? "🔒" : " "));
+                                });
             */
-            get("/txstate").then(data => {
-                let output = "<table>";
-                for (const key in data) {
-                    if (Object.hasOwnProperty.call(data, key)) {
-                        const element = data[key];
-                        output += "<tr><td>" + key + "</td>";
-                        output += "<td>" + element + "</td></tr>";
-                    }
-                }
-                output += "</table>"
-                document.getElementById('infotext').innerHTML = output;
-            });
         }
 
         function refresh_wifi() {
@@ -411,15 +479,15 @@
                     };
                     r.insertCell().appendChild(document.createTextNode(e[0]));
                     r.insertCell().appendChild(document.createTextNode(e[1]));
-                    r.insertCell().appendChild(document.createTextNode(e[2]?"🔒":" "));
+                    r.insertCell().appendChild(document.createTextNode(e[2] ? "🔒" : " "));
                 });
                 document.getElementById('networks').innerHTML = "";
                 document.getElementById('networks').appendChild(t);
             });
         };
-        setInterval(() => {
-            refresh_info();
-        }, 5000);
+        //   setInterval(() => {
+        refresh_info();
+       // }, 5000);
     </script>
 </body>
 
