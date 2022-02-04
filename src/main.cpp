@@ -101,6 +101,7 @@ const char *PARAM_LOA = "loa";
 const char *PARAM_BEAM = "beam";
 const char *PARAM_PORTOFFSET = "portoffset";
 const char *PARAM_BOWOFFSET = "bowoffset";
+const char *PARAM_TOGGLE = "softtxtoggle";
 
 //---------------functions-----------------------------
 
@@ -447,6 +448,11 @@ void setup()
   // GET request /txstate
   server.on("/txstate", HTTP_GET, [](AsyncWebServerRequest *request)
             {
+              if (request->hasParam(PARAM_TOGGLE))
+              {
+                //TODO: send to AIS
+                //->getParam(PARAM_TOGGLE)->value();
+              }
               AsyncResponseStream *response = request->beginResponseStream("application/json");
               DynamicJsonDocument json(1024);
 
@@ -468,6 +474,8 @@ void setup()
               request->send(response);
             });
 
+            
+
   // GET request /scan
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request)
             {
@@ -481,7 +489,6 @@ void setup()
   // GET request /wifi
   server.on("/wifi", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-              String message;
               if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_SSID) && request->hasParam(PARAM_PASSWORD))
               {
                 wifiSettings.type = request->getParam(PARAM_TYPE)->value();
@@ -503,7 +510,6 @@ void setup()
   // GET request /protocol
   server.on("/protocol", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-              String message;
               if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_PORT))
               {
                 protocolSettings.type = request->getParam(PARAM_TYPE)->value();
@@ -523,7 +529,6 @@ void setup()
   // GET request /station
   server.on("/station", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-              String message;
               if (request->hasParam(PARAM_MMSI) && request->hasParam(PARAM_CALLSIGN) && request->hasParam(PARAM_VESSELNAME) && request->hasParam(PARAM_VESSELTYPE) && request->hasParam(PARAM_LOA) && request->hasParam(PARAM_BEAM) && request->hasParam(PARAM_PORTOFFSET) && request->hasParam(PARAM_BOWOFFSET))
               {
                 stationSettings.mmsi = request->getParam(PARAM_MMSI)->value();
