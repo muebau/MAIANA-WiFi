@@ -13,7 +13,10 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-#define DEBUG(X) Serial.print(__LINE__); Serial.print(": "); Serial.println(X)
+#define DEBUG(X)          \
+  Serial.print(__LINE__); \
+  Serial.print(": ");     \
+  Serial.println(X)
 
 //---------------global variables and definitions-------------
 
@@ -169,7 +172,7 @@ String getValue(String data, char separator, int index)
 //GPRMC
 void gpsTimeToStruct(String input)
 {
-  if(getValue(input, ',', 2) == "A")
+  if (getValue(input, ',', 2) == "A")
   {
     infoState.time = getValue(getValue(input, ',', 1), '.', 0);
     infoState.date = getValue(input, ',', 9);
@@ -242,12 +245,6 @@ void noiseFloorToStruct(String input)
   }
 }
 
-//webserver
-void notFound(AsyncWebServerRequest *request)
-{
-  request->send(404, "text/plain", "Not found");
-}
-
 void checkLine(String line)
 {
   if (line.startsWith("$PAI") || line.substring(3).startsWith("RMC"))
@@ -267,7 +264,7 @@ void checkLine(String line)
     }
 
     String checksumStr = String(checksum, HEX);
-    if(checksumStr.length() < 2)
+    if (checksumStr.length() < 2)
     {
       checksumStr = "0" + checksumStr;
     }
@@ -317,7 +314,7 @@ void testParsing()
   checkLine("$PAISTN,987654321,NAUT,CALLSIGN23,37,23,42,34,84*36");
   checkLine("$PAITXCFG,2,3,4,5,6*0C");
   checkLine("$GNRMC,230121.000,A,5130.7862,N,00733.3069,E,0.09,117.11,010222,,,A,V*03");
-/*
+  /*
   Serial.print("wifiSettings.type = ");
   Serial.println(wifiSettings.type);
   Serial.print("wifiSettings.ssid = ");
@@ -397,6 +394,12 @@ void testParsing()
   Serial.println(txState.channelBNoise);
 }
 
+//webserver
+void notFound(AsyncWebServerRequest *request)
+{
+  request->send(404, "text/plain", "Not found");
+}
+
 void setup()
 {
   //general
@@ -406,11 +409,11 @@ void setup()
 
   //webserver
   // Initialize spiffs
-  if(!SPIFFS.begin()){
-        Serial.println("An Error has occurred while mounting SPIFFS");
-        return;
+  if (!SPIFFS.begin())
+  {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
   }
-
 
   WiFi.begin(ssidWebserver, passwordWebserver);
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
@@ -423,14 +426,21 @@ void setup()
   Serial.println(WiFi.localIP());
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            {request->send(SPIFFS, "/index.html", "text/html");});
+            { request->send(SPIFFS, "/index.html", "text/html"); });
 
   // GET request /info
   server.on("/info", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-              String message;
-              message = "info";
-              request->send(200, "text/plain", "Hello, GET: " + message);
+              AsyncResponseStream *response = request->beginResponseStream("application/json");
+              DynamicJsonDocument json(1024);
+              
+              json["ip"] = infoState.ip;
+              json["configTimeout"] = infoState.configTimeout;
+              json["time"] = infoState.time;
+              json["date"] = infoState.date;
+
+              serializeJson(json, *response);
+              request->send(response);
             });
 
   // GET request /wifi
@@ -443,11 +453,16 @@ void setup()
                 wifiSettings.ssid = request->getParam(PARAM_SSID)->value();
                 wifiSettings.password = request->getParam(PARAM_PASSWORD)->value();
               }
-              else
-              {
-                message = "wifi in leer";
-              }
-              request->send(200, "text/plain", "Hello, wifi: " + message);
+
+              AsyncResponseStream *response = request->beginResponseStream("application/json");
+              DynamicJsonDocument json(1024);
+
+              json["type"] = wifiSettings.type;
+              json["ssid"] = wifiSettings.ssid;
+              json["password"] = wifiSettings.password;
+
+              serializeJson(json, *response);
+              request->send(response);
             });
 
   // GET request /protocol
@@ -459,11 +474,15 @@ void setup()
                 protocolSettings.type = request->getParam(PARAM_TYPE)->value();
                 protocolSettings.port = request->getParam(PARAM_PORT)->value().toInt();
               }
-              else
-              {
-                message = "protocol in leer";
-              }
-              request->send(200, "text/plain", "Hello, GET: " + message);
+
+              AsyncResponseStream *response = request->beginResponseStream("application/json");
+              DynamicJsonDocument json(1024);
+
+              json["type"] = protocolSettings.type;
+              json["port"] = protocolSettings.port;
+
+              serializeJson(json, *response);
+              request->send(response);
             });
 
   // GET request /station
@@ -481,11 +500,21 @@ void setup()
                 stationSettings.bowoffset = request->getParam(PARAM_BOWOFFSET)->value().toInt();
                 stationSettings.portoffset = request->getParam(PARAM_PORTOFFSET)->value().toInt();
               }
-              else
-              {
-                message = "station in leer";
-              }
-              request->send(200, "text/plain", "Hello, GET: " + message);
+
+              AsyncResponseStream *response = request->beginResponseStream("application/json");
+              DynamicJsonDocument json(1024);
+
+              json["mmsi"] = stationSettings.mmsi;
+              json["callsign"] = stationSettings.callsign;
+              json["vesselname"] = stationSettings.vesselname;
+              json["vesseltype"] = stationSettings.vesseltype;
+              json["loa"] = stationSettings.loa;
+              json["beam"] = stationSettings.beam;
+              json["portoffset"] = stationSettings.portoffset;
+              json["bowoffset"] = stationSettings.bowoffset;
+
+              serializeJson(json, *response);
+              request->send(response);
             });
 
   server.onNotFound(notFound);
