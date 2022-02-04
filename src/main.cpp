@@ -401,6 +401,7 @@ void setup()
 {
   //general
   Serial.begin(115200);
+  Serial2.begin(115200); //, SERIAL_8N1, RXD2, TXD2);
   testParsing();
   WiFi.mode(WIFI_STA);
 
@@ -497,6 +498,14 @@ void loop()
 {
 
   //general
+  if (Serial.available())
+  {
+    Serial2.write(Serial.read());
+  }
+  if (Serial2.available())
+  {
+    Serial.write(Serial2.read());
+  }
 
   //webserver
 }
