@@ -127,9 +127,9 @@ const char *PARAM_BOWOFFSET = "bowoffset";
 //scanWiFi
 void scanWiFi(AsyncResponseStream *response)
 {
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  delay(100);
+//  WiFi.mode(WIFI_STA);
+//  WiFi.disconnect();
+//  delay(100);
   int n = WiFi.scanNetworks();
 
   DynamicJsonDocument doc(4096);
