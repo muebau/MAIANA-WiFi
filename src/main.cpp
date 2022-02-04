@@ -443,6 +443,30 @@ void setup()
               request->send(response);
             });
 
+  // GET request /txstate
+  server.on("/txstate", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              AsyncResponseStream *response = request->beginResponseStream("application/json");
+              DynamicJsonDocument json(1024);
+
+              json["hardwarePresent"] = txState.hardwarePresent;
+              json["hardwareSwitch"] = txState.hardwareSwitch;
+              json["softwareSwitch"] = txState.softwareSwitch;
+              json["stationData"] = txState.stationData;
+              json["status"] = txState.status;
+              json["channelALast"] = txState.channelALast;
+              json["channelALastTime"] = txState.channelALastTime;
+              json["channelALastDate"] = txState.channelALastDate;
+              json["channelBLast"] = txState.channelBLast;
+              json["channelBLastTime"] = txState.channelBLastTime;
+              json["channelBLastDate"] = txState.channelBLastDate;
+              json["channelANoise"] = txState.channelANoise;
+              json["channelBNoise"] = txState.channelBNoise;
+
+              serializeJson(json, *response);
+              request->send(response);
+            });
+
   // GET request /scan
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request)
             {
