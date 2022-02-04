@@ -125,14 +125,14 @@ const char *PARAM_BOWOFFSET = "bowoffset";
 //set config in MAIANA
 
 //scanWiFi
-void scanWiFi()
+void scanWiFi(AsyncResponseStream *response)
 {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);
   int n = WiFi.scanNetworks();
 
-  DynamicJsonDocument doc(1024);
+  DynamicJsonDocument doc(4096);
 
   if (n == 0)
   {
@@ -147,7 +147,7 @@ void scanWiFi()
       doc["networks"][i][2] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
     }
   }
-  serializeJson(doc, Serial);
+  serializeJson(doc, *response);
 }
 
 String getValue(String data, char separator, int index)
@@ -433,13 +433,23 @@ void setup()
             {
               AsyncResponseStream *response = request->beginResponseStream("application/json");
               DynamicJsonDocument json(1024);
-              
+
               json["ip"] = infoState.ip;
               json["configTimeout"] = infoState.configTimeout;
               json["time"] = infoState.time;
               json["date"] = infoState.date;
 
               serializeJson(json, *response);
+              request->send(response);
+            });
+
+  // GET request /scan
+  server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              AsyncResponseStream *response = request->beginResponseStream("application/json");
+
+              scanWiFi(response);
+
               request->send(response);
             });
 
