@@ -582,7 +582,8 @@ void setup()
             { handleProtocol(request); });
 
   // GET request /station
-  server.on("/station", HTTP_GET, [](AsyncWebServerRequest *request) {handleStation(request);});
+  server.on("/station", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleStation(request); });
 
   server.onNotFound(notFound);
 
