@@ -525,6 +525,22 @@ void handleStation(AsyncWebServerRequest *request)
   request->send(response);
 }
 
+void handleSystem(AsyncWebServerRequest *request)
+{
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  DynamicJsonDocument json(1024);
+
+  json["hardwareRevision"] = systemSettings.hardwareRevision;
+  json["firmwareRevision"] = systemSettings.firmwareRevision;
+  json["serialNumber"] = systemSettings.serialNumber;
+  json["MCUtype"] = systemSettings.MCUtype;
+  json["breakoutGeneration"] = systemSettings.breakoutGeneration;
+  json["bootloader"] = systemSettings.bootloader;
+
+  serializeJson(json, *response);
+  request->send(response);
+}
+
 void notFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "Not found");
@@ -586,6 +602,10 @@ void setup()
   // GET request /station
   server.on("/station", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleStation(request); });
+
+  // GET request /system
+  server.on("/system", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleSystem(request); });
 
   server.onNotFound(notFound);
 
