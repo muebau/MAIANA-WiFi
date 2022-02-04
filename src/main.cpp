@@ -82,9 +82,13 @@ struct txState
   String channelBNoise;
 } txState;
 
-//taster
+//switch
 
-#define TASTER 4
+#define SWITCH 4
+#define CONFIG_TIMEOUT 300
+bool configMode = false;
+//timestamp of the last time the switch was pressed
+unsigned long configStarted = 0;
 
 //webserver
 
@@ -441,9 +445,6 @@ void handleTXstate(AsyncWebServerRequest *request)
 
   serializeJson(json, *response);
   request->send(response);
-
-  Serial.print("DebugGPIO: ");
-  Serial.println(digitalRead(TASTER));
 }
 
 void handleScan(AsyncWebServerRequest *request)
@@ -537,8 +538,8 @@ void setup()
   testParsing();
   WiFi.mode(WIFI_STA);
 
-  //GPIO for taster
-  pinMode(TASTER, INPUT_PULLDOWN);
+  //GPIO for switch
+  pinMode(SWITCH, INPUT_PULLUP);
 
   //webserver
   // Initialize spiffs
@@ -557,6 +558,7 @@ void setup()
 
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+  infoState.ip = WiFi.localIP().toString();
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(SPIFFS, "/index.html", "text/html"); });
@@ -587,7 +589,7 @@ void setup()
 
   server.onNotFound(notFound);
 
-  server.begin();
+  //server.begin();
 }
 
 void loop()
@@ -603,5 +605,24 @@ void loop()
     Serial.write(Serial2.read());
   }
 
-  //webserver
+  //switch
+
+  //0 = switch is pressed
+  if (digitalRead(SWITCH) == 0)
+  {
+    configStarted = millis();
+    configMode = true;
+    server.begin();
+  }
+
+  if (configMode)
+  {
+    uint16_t confSecSince = (millis() - configStarted) / 1000;
+    infoState.configTimeout = CONFIG_TIMEOUT - confSecSince;
+    if (confSecSince >= CONFIG_TIMEOUT)
+    {
+      server.end();
+      configMode = false;
+    }
+  }
 }
