@@ -532,8 +532,8 @@ void notFound(AsyncWebServerRequest *request)
 void setup()
 {
   //general
-  Serial.begin(115200);
-  Serial2.begin(115200); //, SERIAL_8N1, RXD2, TXD2);
+  Serial.begin(38400);
+  Serial2.begin(38400); //, SERIAL_8N1, RXD2, TXD2);
   testParsing();
   WiFi.mode(WIFI_STA);
 
