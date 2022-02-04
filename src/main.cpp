@@ -10,7 +10,7 @@
 #include <FS.h>
 #include <SPIFFS.h>
 
-#include <AsyncTCP.h>
+//#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
 #define DEBUG(X)          \
@@ -132,32 +132,6 @@ const char *PARAM_TOGGLE = "softtxtoggle";
 
 //read from MAIANA
 //set config in MAIANA
-
-//scanWiFi
-void scanWiFi(AsyncResponseStream *response)
-{
-  //  WiFi.mode(WIFI_STA);
-  //  WiFi.disconnect();
-  //  delay(100);
-  int n = WiFi.scanNetworks();
-
-  DynamicJsonDocument doc(4096);
-
-  if (n == 0)
-  {
-    doc.createNestedArray("networks");
-  }
-  else
-  {
-    for (int i = 0; i < n; ++i)
-    {
-      doc["networks"][i][0] = WiFi.SSID(i);
-      doc["networks"][i][1] = WiFi.RSSI(i);
-      doc["networks"][i][2] = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
-    }
-  }
-  serializeJson(doc, *response);
-}
 
 String getValue(String data, char separator, int index)
 {
@@ -449,11 +423,35 @@ void handleTXstate(AsyncWebServerRequest *request)
 
 void handleScan(AsyncWebServerRequest *request)
 {
-  AsyncResponseStream *response = request->beginResponseStream("application/json");
-
-  scanWiFi(response);
-
-  request->send(response);
+  String json = "[";
+  int n = WiFi.scanComplete();
+  if (n == -2)
+  {
+    WiFi.scanNetworks(true);
+  }
+  else if (n)
+  {
+    for (int i = 0; i < n; ++i)
+    {
+      if (i)
+        json += ",";
+      json += "{";
+      json += "\"rssi\":" + String(WiFi.RSSI(i));
+      json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
+      json += ",\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"";
+      json += ",\"channel\":" + String(WiFi.channel(i));
+      json += ",\"secure\":" + String(WiFi.encryptionType(i));
+      json += "}";
+    }
+    WiFi.scanDelete();
+    if (WiFi.scanComplete() == -2)
+    {
+      WiFi.scanNetworks(true);
+    }
+  }
+  json += "]";
+  request->send(200, "application/json", json);
+  json = String();
 }
 
 void handleWifi(AsyncWebServerRequest *request)
@@ -571,6 +569,7 @@ void setup()
     Serial.printf("WiFi Failed!\n");
     return;
   }
+  WiFi.scanNetworks(true);
 
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());

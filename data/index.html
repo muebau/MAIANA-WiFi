@@ -618,24 +618,20 @@
         document.getElementById('wifi-scan').onclick = function () {
             get("/scan").then(data => {
 
-                const t = document.createElement("table");
+                let t = buildElement(
+                    {
+                        type: "table",
+                        childs: ["SSID \u{1F4E1}", "channel \u{1F522}", "RSSI \u{1F4F6}", "encryption \u{1F512}"].map(e => buildElement({ "type": "th", "childs": e }))
+                    }
+                );
 
-                ["\u{1F4E1}", "\u{1F4F6}", "\u{1F512}"].forEach(e => {
-                    let th = document.createElement("th");
-                    th.appendChild(document.createTextNode(e));
-                    t.appendChild(th);
-                });
-
-
-                data.networks.forEach(e => {
-                    let r = t.insertRow();
-                    r.onclick = function () {
-                        document.getElementById("wifi-ssid").value = e[0];
-                    };
-                    r.insertCell().appendChild(document.createTextNode(e[0]));
-                    r.insertCell().appendChild(document.createTextNode(e[1]));
-                    r.insertCell().appendChild(document.createTextNode(e[2] ? "\u{1F512}" : " "));
-                });
+                addTableRows(t, 
+                    data.map(
+                        net => [net.ssid, net.channel, net.rssi, net.secure > 0 ? "\u{1F512}" : "open"].map(
+                            e => buildElement({"type": "div", "attr": [["onclick", "document.getElementById(\"wifi-ssid\").value = net.ssid"]], "childs": e})
+                        )
+                    )
+                );
                 document.getElementById('networks').innerHTML = "";
                 document.getElementById('networks').appendChild(t);
             });
