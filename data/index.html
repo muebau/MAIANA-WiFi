@@ -620,7 +620,7 @@
 
                 const t = document.createElement("table");
 
-                ["📡", "📶", "🔒"].forEach(e => {
+                ["\u{1F4E1}", "\u{1F4F6}", "\u{1F512}"].forEach(e => {
                     let th = document.createElement("th");
                     th.appendChild(document.createTextNode(e));
                     t.appendChild(th);
@@ -634,7 +634,7 @@
                     };
                     r.insertCell().appendChild(document.createTextNode(e[0]));
                     r.insertCell().appendChild(document.createTextNode(e[1]));
-                    r.insertCell().appendChild(document.createTextNode(e[2] ? "🔒" : " "));
+                    r.insertCell().appendChild(document.createTextNode(e[2] ? "\u{1F512}" : " "));
                 });
                 document.getElementById('networks').innerHTML = "";
                 document.getElementById('networks').appendChild(t);
