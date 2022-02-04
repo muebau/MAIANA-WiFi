@@ -82,6 +82,10 @@ struct txState
   String channelBNoise;
 } txState;
 
+//taster
+
+#define TASTER 4
+
 //webserver
 
 AsyncWebServer server(80);
@@ -128,9 +132,9 @@ const char *PARAM_TOGGLE = "softtxtoggle";
 //scanWiFi
 void scanWiFi(AsyncResponseStream *response)
 {
-//  WiFi.mode(WIFI_STA);
-//  WiFi.disconnect();
-//  delay(100);
+  //  WiFi.mode(WIFI_STA);
+  //  WiFi.disconnect();
+  //  delay(100);
   int n = WiFi.scanNetworks();
 
   DynamicJsonDocument doc(4096);
@@ -396,6 +400,130 @@ void testParsing()
 }
 
 //webserver
+
+void handleInfo(AsyncWebServerRequest *request)
+{
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  DynamicJsonDocument json(1024);
+
+  json["ip"] = infoState.ip;
+  json["configTimeout"] = infoState.configTimeout;
+  json["time"] = infoState.time;
+  json["date"] = infoState.date;
+
+  serializeJson(json, *response);
+  request->send(response);
+}
+
+void handleTXstate(AsyncWebServerRequest *request)
+{
+  if (request->hasParam(PARAM_TOGGLE))
+  {
+    //TODO: send to AIS
+    //->getParam(PARAM_TOGGLE)->value();
+  }
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  DynamicJsonDocument json(1024);
+
+  json["hardwarePresent"] = txState.hardwarePresent;
+  json["hardwareSwitch"] = txState.hardwareSwitch;
+  json["softwareSwitch"] = txState.softwareSwitch;
+  json["stationData"] = txState.stationData;
+  json["status"] = txState.status;
+  json["channelALast"] = txState.channelALast;
+  json["channelALastTime"] = txState.channelALastTime;
+  json["channelALastDate"] = txState.channelALastDate;
+  json["channelBLast"] = txState.channelBLast;
+  json["channelBLastTime"] = txState.channelBLastTime;
+  json["channelBLastDate"] = txState.channelBLastDate;
+  json["channelANoise"] = txState.channelANoise;
+  json["channelBNoise"] = txState.channelBNoise;
+
+  serializeJson(json, *response);
+  request->send(response);
+
+  Serial.print("DebugGPIO: ");
+  Serial.println(digitalRead(TASTER));
+}
+
+void handleScan(AsyncWebServerRequest *request)
+{
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+
+  scanWiFi(response);
+
+  request->send(response);
+}
+
+void handleWifi(AsyncWebServerRequest *request)
+{
+  if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_SSID) && request->hasParam(PARAM_PASSWORD))
+  {
+    wifiSettings.type = request->getParam(PARAM_TYPE)->value();
+    wifiSettings.ssid = request->getParam(PARAM_SSID)->value();
+    wifiSettings.password = request->getParam(PARAM_PASSWORD)->value();
+  }
+
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  DynamicJsonDocument json(1024);
+
+  json["type"] = wifiSettings.type;
+  json["ssid"] = wifiSettings.ssid;
+  json["password"] = wifiSettings.password;
+
+  serializeJson(json, *response);
+  request->send(response);
+}
+
+void handleProtocol(AsyncWebServerRequest *request)
+{
+  if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_PORT))
+  {
+    protocolSettings.type = request->getParam(PARAM_TYPE)->value();
+    protocolSettings.port = request->getParam(PARAM_PORT)->value().toInt();
+  }
+
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  DynamicJsonDocument json(1024);
+
+  json["type"] = protocolSettings.type;
+  json["port"] = protocolSettings.port;
+
+  serializeJson(json, *response);
+  request->send(response);
+}
+
+void handleStation(AsyncWebServerRequest *request)
+{
+
+  if (request->hasParam(PARAM_MMSI) && request->hasParam(PARAM_CALLSIGN) && request->hasParam(PARAM_VESSELNAME) && request->hasParam(PARAM_VESSELTYPE) && request->hasParam(PARAM_LOA) && request->hasParam(PARAM_BEAM) && request->hasParam(PARAM_PORTOFFSET) && request->hasParam(PARAM_BOWOFFSET))
+  {
+    stationSettings.mmsi = request->getParam(PARAM_MMSI)->value();
+    stationSettings.callsign = request->getParam(PARAM_CALLSIGN)->value();
+    stationSettings.vesselname = request->getParam(PARAM_VESSELNAME)->value();
+    stationSettings.vesseltype = request->getParam(PARAM_VESSELTYPE)->value().toInt();
+    stationSettings.loa = request->getParam(PARAM_LOA)->value().toInt();
+    stationSettings.beam = request->getParam(PARAM_BEAM)->value().toInt();
+    stationSettings.bowoffset = request->getParam(PARAM_BOWOFFSET)->value().toInt();
+    stationSettings.portoffset = request->getParam(PARAM_PORTOFFSET)->value().toInt();
+  }
+
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  DynamicJsonDocument json(1024);
+
+  json["mmsi"] = stationSettings.mmsi;
+  json["callsign"] = stationSettings.callsign;
+  json["vesselname"] = stationSettings.vesselname;
+  json["vesseltype"] = stationSettings.vesseltype;
+  json["loa"] = stationSettings.loa;
+  json["beam"] = stationSettings.beam;
+  json["portoffset"] = stationSettings.portoffset;
+  json["bowoffset"] = stationSettings.bowoffset;
+
+  serializeJson(json, *response);
+  request->send(response);
+}
+
 void notFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "Not found");
@@ -408,6 +536,9 @@ void setup()
   Serial2.begin(115200); //, SERIAL_8N1, RXD2, TXD2);
   testParsing();
   WiFi.mode(WIFI_STA);
+
+  //GPIO for taster
+  pinMode(TASTER, INPUT_PULLDOWN);
 
   //webserver
   // Initialize spiffs
@@ -432,130 +563,26 @@ void setup()
 
   // GET request /info
   server.on("/info", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              AsyncResponseStream *response = request->beginResponseStream("application/json");
-              DynamicJsonDocument json(1024);
-
-              json["ip"] = infoState.ip;
-              json["configTimeout"] = infoState.configTimeout;
-              json["time"] = infoState.time;
-              json["date"] = infoState.date;
-
-              serializeJson(json, *response);
-              request->send(response);
-            });
+            { handleInfo(request); });
 
   // GET request /txstate
   server.on("/txstate", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              if (request->hasParam(PARAM_TOGGLE))
-              {
-                //TODO: send to AIS
-                //->getParam(PARAM_TOGGLE)->value();
-              }
-              AsyncResponseStream *response = request->beginResponseStream("application/json");
-              DynamicJsonDocument json(1024);
-
-              json["hardwarePresent"] = txState.hardwarePresent;
-              json["hardwareSwitch"] = txState.hardwareSwitch;
-              json["softwareSwitch"] = txState.softwareSwitch;
-              json["stationData"] = txState.stationData;
-              json["status"] = txState.status;
-              json["channelALast"] = txState.channelALast;
-              json["channelALastTime"] = txState.channelALastTime;
-              json["channelALastDate"] = txState.channelALastDate;
-              json["channelBLast"] = txState.channelBLast;
-              json["channelBLastTime"] = txState.channelBLastTime;
-              json["channelBLastDate"] = txState.channelBLastDate;
-              json["channelANoise"] = txState.channelANoise;
-              json["channelBNoise"] = txState.channelBNoise;
-
-              serializeJson(json, *response);
-              request->send(response);
-            });
-
-            
+            { handleTXstate(request); });
 
   // GET request /scan
   server.on("/scan", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              AsyncResponseStream *response = request->beginResponseStream("application/json");
-
-              scanWiFi(response);
-
-              request->send(response);
-            });
+            { handleScan(request); });
 
   // GET request /wifi
   server.on("/wifi", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_SSID) && request->hasParam(PARAM_PASSWORD))
-              {
-                wifiSettings.type = request->getParam(PARAM_TYPE)->value();
-                wifiSettings.ssid = request->getParam(PARAM_SSID)->value();
-                wifiSettings.password = request->getParam(PARAM_PASSWORD)->value();
-              }
-
-              AsyncResponseStream *response = request->beginResponseStream("application/json");
-              DynamicJsonDocument json(1024);
-
-              json["type"] = wifiSettings.type;
-              json["ssid"] = wifiSettings.ssid;
-              json["password"] = wifiSettings.password;
-
-              serializeJson(json, *response);
-              request->send(response);
-            });
+            { handleWifi(request); });
 
   // GET request /protocol
   server.on("/protocol", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_PORT))
-              {
-                protocolSettings.type = request->getParam(PARAM_TYPE)->value();
-                protocolSettings.port = request->getParam(PARAM_PORT)->value().toInt();
-              }
-
-              AsyncResponseStream *response = request->beginResponseStream("application/json");
-              DynamicJsonDocument json(1024);
-
-              json["type"] = protocolSettings.type;
-              json["port"] = protocolSettings.port;
-
-              serializeJson(json, *response);
-              request->send(response);
-            });
+            { handleProtocol(request); });
 
   // GET request /station
-  server.on("/station", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              if (request->hasParam(PARAM_MMSI) && request->hasParam(PARAM_CALLSIGN) && request->hasParam(PARAM_VESSELNAME) && request->hasParam(PARAM_VESSELTYPE) && request->hasParam(PARAM_LOA) && request->hasParam(PARAM_BEAM) && request->hasParam(PARAM_PORTOFFSET) && request->hasParam(PARAM_BOWOFFSET))
-              {
-                stationSettings.mmsi = request->getParam(PARAM_MMSI)->value();
-                stationSettings.callsign = request->getParam(PARAM_CALLSIGN)->value();
-                stationSettings.vesselname = request->getParam(PARAM_VESSELNAME)->value();
-                stationSettings.vesseltype = request->getParam(PARAM_VESSELTYPE)->value().toInt();
-                stationSettings.loa = request->getParam(PARAM_LOA)->value().toInt();
-                stationSettings.beam = request->getParam(PARAM_BEAM)->value().toInt();
-                stationSettings.bowoffset = request->getParam(PARAM_BOWOFFSET)->value().toInt();
-                stationSettings.portoffset = request->getParam(PARAM_PORTOFFSET)->value().toInt();
-              }
-
-              AsyncResponseStream *response = request->beginResponseStream("application/json");
-              DynamicJsonDocument json(1024);
-
-              json["mmsi"] = stationSettings.mmsi;
-              json["callsign"] = stationSettings.callsign;
-              json["vesselname"] = stationSettings.vesselname;
-              json["vesseltype"] = stationSettings.vesseltype;
-              json["loa"] = stationSettings.loa;
-              json["beam"] = stationSettings.beam;
-              json["portoffset"] = stationSettings.portoffset;
-              json["bowoffset"] = stationSettings.bowoffset;
-
-              serializeJson(json, *response);
-              request->send(response);
-            });
+  server.on("/station", HTTP_GET, [](AsyncWebServerRequest *request) {handleStation(request);});
 
   server.onNotFound(notFound);
 
