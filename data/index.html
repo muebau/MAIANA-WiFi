@@ -162,6 +162,8 @@
             background-color: #303245;
         }
     </style>
+    <link rel="icon" type="image/png"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACqklEQVQ4T42SbUhTURjHn3Pu3VU3IUq02RKlog9qhGH4oYxK6ItUVKaohB96+1ZBL4ShrtIsKzT8kC9IQe+7YJgVkoWoqYGv2Nzm2DQkndNyq5b3lu6ezr2ytTU/dL6d55z/7+H5P38E/3GIIWUfYMgBQoywwNSjvP4vPhkK1J8oLIvFwjyuqSybDKyTJ8lxwHIJFLANEDoKIBWgw0Pd8h8/4HRx+XlBEK/TEq2RUYRQ5dx4YgPPZ3sJv6WS/twFEqkGaaEbGO4FiMIOdMTsUAC9w9Z1zW/eWqadTtU/E/URFuXXl+utxLBZB5hpoJAm2oCjjVah7MGSJYDJdqm9s7vUarOHOMKyjLsgL9eMGfwh1ZJZBpK6h0IKAKMzKGsgRwH0meyPJz5P5ra0vgsBxMethT0Zu0GSvO/TNm1MJ3zKfcBiCUBYMjo09GoJMGJ/SIDkN71qgZnZWT9kjVYLGTvToa2zC6Yczm+I/E67W1E6GtjFN8IFBOjGnMsFz5tfg9frBZ+4ta0dpp0zioYg1O8eT0yTjQ1aY4/ZnKAinJUWVbIPvQODcHBvJgSK/QKETtZW6OtCctA3YrtDN3hKfjCaLDA0/BHmBWG5mJnqbl5OCgEYOjqitZqoCXVEeLj8aLOPQXtXjzJOUKgIIWhxUVdXdc0RFKQaw8tGlmEObIiPg0h1hKKZc7uhk0KcM3+NpWUJExRbc0uvGKOYWGto3g6AO+Q7PaBbHQ0xUSvlC00vgckpB9jHP8EPj+eX2+W6WHW1sCpohNv3nhVp1JorssB3VCoWVmg0oNPG8CqWFSWQjIigp6lJ6ydC1njsXPH+MI5r1ERGYo7jlK6iKMJPj8fydcyYzPN8sBEBBH/L42eLtgLGWTQP8UBgXkJSvyDiB4+q9d+XW4Wv9gf1IB4gEyeL3wAAAABJRU5ErkJggg==" />
 </head>
 
 <body>
@@ -169,27 +171,11 @@
     <div id="infobox">
         <div id="infotext">
         </div>
-        <table>
-            <tr>
-                <td>
-                    <label for="noiseChannelA">Noise channel A:</label>
-                </td>
-                <td>
-                    <meter id="noiseChannelA" min="0" max="100" optimum=10 low="33" high="66" value="80"
-                        title="dB">80</meter> 80 <br>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <label for="noiseChannelB">Noise channel B:</label>
-                </td>
-                <td>
-                    <meter id="noiseChannelB" min="0" max="100" optimum=10 low="33" high="66" value="32"
-                        title="dB">32</meter> 32<br>
-                </td>
-            </tr>
-        </table>
-
+        <details>
+            <summary>more info</summary>
+            <div id="infodetails">
+            </div>
+        </details>
         <button type="button" id="toggle-tx">toggle TX</button>
         <button type="button" id="refresh">load config</button>
     </div>
@@ -282,11 +268,36 @@
                 <label for="station-bowoffset">bow offset (meter)</label>
                 <input type="number" id="station-bowoffset" name="station-bowoffset" value="" min="0" required>
 
+                <details>
+                    <summary>more info</summary>
+                    <div id="infodetails">
+                        <svg id="shipFigure" height="400" width="420">
+                            <polyline points="20,380 20,140 40,80 60,60 100,20 140,60 160,80 180,140 180,380 20,380"
+                                style="fill:none;stroke:white;stroke-width:3" />
+                            <text id="beamText" x="50" y="230" fill="white">beam</text>
+                            <line x1="30" y1="210" x2="170" y2="210" style="stroke:rgb(255,0,0);stroke-width:2" />
+                            <text id="loaText" x="170" y="-210" fill="white" transform="rotate(90)" id="text356">LOA</text>
+                            <line x1="200" y1="20" x2="200" y2="380" style="stroke:rgb(255,0,0);stroke-width:2" />
+
+                            <polyline points="20,380 20,140 40,80 60,60 100,20 140,60 160,80 180,140 180,380 20,380"
+                                style="fill:none;stroke:white;stroke-width:3" transform="translate(220, 0)" />
+                            <line id="poLine" x1="240" y1="210" x2="400" y2="210" style="stroke:rgb(255,0,0);stroke-width:2" />
+                            <line id="boLine" x1="320" y1="20" x2="320" y2="380" style="stroke:rgb(255,0,0);stroke-width:2" />
+                        </svg>
+                    </div>
+                </details>
+
                 <button type="button" id="station-set">SET</button>
             </fieldset>
         </form>
     </div>
     <script>
+        function setFigureData(loa, beam, poffset, boffset) {
+            let fig = document.getElementById("shipFigure");
+            let loaText = document.getElementById("loaText");
+            loaText.innerHTML = "hello";
+        }
+
         function get(url, params) {
             url += '?' + new URLSearchParams(params).toString();
 
@@ -328,7 +339,59 @@
         };
 
         function dateFromDigits(t, d) {
-            return new Date("20" + d.substring(4, 6) + "-" + d.substring(2, 4) + "-" + d.substring(0, 2) + "T" + t.substring(0, 2) + ":" + t.substring(2, 4) + ":" + t.substring(4, 6) + "Z");
+            let date = new Date("20" + d.substring(4, 6) + "-" + d.substring(2, 4) + "-" + d.substring(0, 2) + "T" + t.substring(0, 2) + ":" + t.substring(2, 4) + ":" + t.substring(4, 6) + "Z");
+            if (!(date instanceof Date) || isNaN(date)) {
+                date = new Date(0);
+            }
+            return date;
+        }
+
+        function buildElement(content) {
+            if (content != null) {
+                if (content instanceof HTMLElement) {
+                    return content;
+                }
+                else if (Array.isArray(content)) {
+                    return content.map(x => buildElement(x));
+                }
+                else if (typeof content == "object") {
+                    let newElement = document.createElement(content.type);
+
+                    if (content.attr) {
+                        content.attr.forEach(a => {
+                            newElement.setAttribute(a[0], a[1]);
+                        });
+                    }
+
+                    if (content.childs) {
+                        content.childs = Array.isArray(content.childs) ? content.childs : [content.childs];
+
+                        buildElement(content.childs).forEach(child => {
+                            newElement.appendChild(child);
+                        });
+                    }
+
+                    return newElement;
+                }
+                else {
+                    return document.createTextNode(content);
+                }
+            }
+            return document.createTextNode("");
+        }
+
+        function addTableRows(table, content) {
+            content.forEach(rowContent => {
+                let row = table.insertRow();
+                rowContent.forEach(cellContent => {
+                    let cell = row.insertCell();
+                    //make sure its an array
+                    cellContent = Array.isArray(cellContent) ? cellContent : [cellContent];
+                    cellContent.forEach(el => {
+                        cell.appendChild(buildElement(el));
+                    });
+                });
+            });
         }
 
         function refresh_info() {
@@ -339,87 +402,177 @@
                     let infoState = results[0];
                     let txState = results[1];
                     let r, c;
-                    const table = document.createElement("table");
 
                     //TIME
-                    time = dateFromDigits(infoState.time, infoState.date);
+                    let time = dateFromDigits(infoState.time, infoState.date);
+                    let lastChA = dateFromDigits(txState.channelALastTime, txState.channelALastDate);
+                    let lastChB = dateFromDigits(txState.channelBLastTime, txState.channelBLastDate);
 
-                    r = table.insertRow();
-                    r.insertCell().appendChild(document.createTextNode("GPS time (local)"));
+                    box = document.getElementById('infotext');
+                    box.innerHTML = "";
 
-                    e = document.createElement("time");
-                    e.setAttribute("datetime", time.toISOString());
-                    e.appendChild(document.createTextNode(time.toLocaleString()));
-                    r.insertCell().appendChild(e);
+                    let table = document.createElement("table");
+                    addTableRows(table, [
+                        //IP
+                        [
+                            "Network status",
+                            infoState.networkstatus
+                        ],
+                        //IP
+                        [
+                            "IP",
+                            infoState.ip
+                        ],
+                        //Config Timeout (sec)
+                        [
+                            "Config Timeout (sec)",
+                            infoState.configtimeout
+                        ],
+                    ]);
+                    box.appendChild(table);
 
-                    r = table.insertRow();
-                    r.insertCell().appendChild(document.createTextNode("GPS time (UTC)"));
+                    boxdetails = document.getElementById('infodetails');
+                    boxdetails.innerHTML = "";
 
-                    e = document.createElement("time");
-                    e.setAttribute("datetime", time.toISOString());
-                    e.appendChild(document.createTextNode(time.toISOString()));
-                    r.insertCell().appendChild(e);
+                    table = document.createElement("table");
+                    addTableRows(table, [
+                        //Hardware Present
+                        [
+                            "Hardware Present",
+                            txState.hardwarePresent == "1" ? "✅" : "⛔️"
+                        ],
+                        //Hardware Switch
+                        [
+                            "Hardware TX Switch",
+                            txState.hardwareSwitch == "1" ? "✅" : "⛔️"
+                        ],
+                        //Software TX Switch
+                        [
+                            "Software TX Switch",
+                            txState.softwareSwitch == "1" ? "✅" : "⛔️"
+                        ],
+                        //Station data provided
+                        [
+                            "Station data provided",
+                            txState.stationData == "1" ? "✅" : "⛔️"
+                        ],
+                        //TX status
+                        [
+                            "TX status",
+                            txState.status == "1" ? "✅ (transmitting)" : "⛔️ (not transmitting)"
+                        ],
+                        //GPS time (local)
+                        [
+                            "GPS time (local)",
+                            {
+                                "type": "time",
+                                "attr": [
+                                    ["datetime", time.toISOString()]
+                                ],
+                                "childs": time.toLocaleString()
+                            },
+                        ],
+                        //GPS time (UTC)
+                        [
+                            "GPS time (UTC)",
+                            {
+                                "type": "time",
+                                "attr": [
+                                    ["datetime", time.toISOString()]
+                                ],
+                                "childs": time.toISOString()
+                            },
+                        ],
+                        //Last send channel A
+                        [
+                            "Last send channel A",
+                            [
+                                txState.channelALast,
+                                " (",
+                                {
+                                    "type": "time",
+                                    "attr": [
+                                        ["datetime", lastChA.toISOString()]
+                                    ],
+                                    "childs": lastChA.toLocaleTimeString()
+                                },
+                                ")"
+                            ]
+                        ],
+                        //Last send channel B
+                        [
+                            "Last send channel B",
+                            [
+                                txState.channelBLast,
+                                " (",
+                                {
+                                    "type": "time",
+                                    "attr": [
+                                        ["datetime", lastChB.toISOString()]
+                                    ],
+                                    "childs": lastChB.toLocaleTimeString()
+                                },
+                                ")"
+                            ]
+                        ],
+                        //Noise channel A
+                        [
+                            {
+                                "type": "label",
+                                "attr": [
+                                    ["for", "noiseChannelA"]
+                                ],
+                                "childs": "Noise channel A"
+                            },
+                            [
+                                {
+                                    "type": "meter",
+                                    "attr": [
+                                        ["id", "noiseChannelA"],
+                                        ["min", 0],
+                                        ["max", 255],
+                                        ["optimum", 10],
+                                        ["low", 33],
+                                        ["high", 64],
+                                        ["value", parseInt(txState.channelANoise, 16)],
+                                        ["title", "dB"]
+                                    ],
+                                    "childs": parseInt(txState.channelANoise, 16)
+                                },
+                                " (" + parseInt(txState.channelANoise, 16) + ")"
+                            ]
+                        ],
+                        //Noise channel B
+                        [
+                            {
+                                "type": "label",
+                                "attr": [
+                                    ["for", "noiseChannelB"]
+                                ],
+                                "childs": "Noise channel B"
+                            },
+                            [
+                                {
+                                    "type": "meter",
+                                    "attr": [
+                                        ["id", "noiseChannelB"],
+                                        ["min", 0],
+                                        ["max", 255],
+                                        ["optimum", 10],
+                                        ["low", 33],
+                                        ["high", 64],
+                                        ["value", parseInt(txState.channelBNoise, 16)],
+                                        ["title", "dB"]
+                                    ],
+                                    "childs": parseInt(txState.channelBNoise, 16)
+                                },
+                                " (" + parseInt(txState.channelBNoise, 16) + ")"
+                            ]
 
-                    //NOISE
-                    let t = infoState.time;
-                    let d = infoState.date;
-                    time = new Date("20" + d.substring(4, 6) + "-" + d.substring(2, 4) + "-" + d.substring(0, 2) + "T" + t.substring(0, 2) + ":" + t.substring(2, 4) + ":" + t.substring(4, 6) + "Z");
-
-                    r = table.insertRow();
-                    r.insertCell().appendChild(document.createTextNode("GPS time (local)"));
-
-                    e = document.createElement("time");
-                    e.setAttribute("datetime", time.toISOString());
-                    e.appendChild(document.createTextNode(time.toLocaleString()));
-                    r.insertCell().appendChild(e);
-
-                    r = table.insertRow();
-                    r.insertCell().appendChild(document.createTextNode("GPS time (UTC)"));
-
-                    e = document.createElement("time");
-                    e.setAttribute("datetime", time.toISOString());
-                    e.appendChild(document.createTextNode(time.toISOString()));
-                    r.insertCell().appendChild(e);
-                    document.getElementById('infotext').innerHTML = "";
-                    document.getElementById('infotext').appendChild(table);
+                        ]
+                    ]);
+                    boxdetails.appendChild(table);
                 });
-            /*
-                                let output = "<table>";
-                                for (const key in data) {
-                                    if (Object.hasOwnProperty.call(data, key)) {
-                                        const element = data[key];
-                                        output += "<tr><td>" + key + "</td>";
-                                        output += "<td>" + element + "</td></tr>";
-                                    }
-                                }
-                                output += "</table>"
-                                document.getElementById('infotext').innerHTML = output;
-            
-                                let output = "<table>";
-                                for (const key in data) {
-                                    if (Object.hasOwnProperty.call(data, key)) {
-                                        const element = data[key];
-                                        output += "<tr><td>" + key + "</td>";
-                                        if (element == 0) {
-                                            output += "<td>⛔️</td></tr>";
-                                        } else if (element == 1) {
-                                            output += "<td>✅</td></tr>";
-                                        }
-                                        else {
-                                            output += "<td>" + element + "</td></tr>";
-                                        }
-                                    }
-                                }
-                                data.networks.forEach(e => {
-                                    r = t.insertRow();
-                                    r.onclick = function () {
-                                        document.getElementById("wifi-ssid").value = e[0];
-                                    };
-                                    r.insertCell().appendChild(document.createTextNode(e[0]));
-                                    r.insertCell().appendChild(document.createTextNode(e[1]));
-                                    r.insertCell().appendChild(document.createTextNode(e[2] ? "🔒" : " "));
-                                });
-            */
         }
 
         function refresh_wifi() {
@@ -458,6 +611,8 @@
         };
 
         document.getElementById('toggle-tx').onclick = function () {
+            get("/txstate", { "softtxtoggle": 1 }).then(data => {
+            });
         };
 
         document.getElementById('wifi-scan').onclick = function () {
@@ -485,9 +640,9 @@
                 document.getElementById('networks').appendChild(t);
             });
         };
-        //   setInterval(() => {
-        refresh_info();
-       // }, 5000);
+        setInterval(() => {
+            refresh_info();
+        }, 5000);
     </script>
 </body>
 
