@@ -90,9 +90,17 @@ bool configMode = false;
 //timestamp of the last time the switch was pressed
 unsigned long configStarted = 0;
 
+#define BLINK_SEC 2
+unsigned long blinkMillis = 0;
+bool blinkState = false;
+
 //webserver
 
 AsyncWebServer server(80);
+
+#define NMEALEN 84
+char nmeaLine[NMEALEN] = "";
+uint8_t nmeaPos = 0;
 
 const char *ssidWebserver = "ulfnet";
 const char *passwordWebserver = "!=hierbinichmenschhierwillichsein44100$%";
@@ -397,8 +405,16 @@ void handleTXstate(AsyncWebServerRequest *request)
 {
   if (request->hasParam(PARAM_TOGGLE))
   {
-    //TODO: send to AIS
-    //->getParam(PARAM_TOGGLE)->value();
+    if (txState.softwareSwitch)
+    {
+      Serial2.print("tx off\r\n");
+    }
+    else
+    {
+      Serial2.print("tx on\r\n");
+    }
+
+    Serial2.print("tx?\r\n");
   }
   AsyncResponseStream *response = request->beginResponseStream("application/json");
   DynamicJsonDocument json(1024);
@@ -461,6 +477,7 @@ void handleWifi(AsyncWebServerRequest *request)
     wifiSettings.type = request->getParam(PARAM_TYPE)->value();
     wifiSettings.ssid = request->getParam(PARAM_SSID)->value();
     wifiSettings.password = request->getParam(PARAM_PASSWORD)->value();
+    //TODO: cofigure WiFi
   }
 
   AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -480,6 +497,7 @@ void handleProtocol(AsyncWebServerRequest *request)
   {
     protocolSettings.type = request->getParam(PARAM_TYPE)->value();
     protocolSettings.port = request->getParam(PARAM_PORT)->value().toInt();
+    //TODO: configure forwarding
   }
 
   AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -494,7 +512,6 @@ void handleProtocol(AsyncWebServerRequest *request)
 
 void handleStation(AsyncWebServerRequest *request)
 {
-
   if (request->hasParam(PARAM_MMSI) && request->hasParam(PARAM_CALLSIGN) && request->hasParam(PARAM_VESSELNAME) && request->hasParam(PARAM_VESSELTYPE) && request->hasParam(PARAM_LOA) && request->hasParam(PARAM_BEAM) && request->hasParam(PARAM_PORTOFFSET) && request->hasParam(PARAM_BOWOFFSET))
   {
     stationSettings.mmsi = request->getParam(PARAM_MMSI)->value();
@@ -505,6 +522,9 @@ void handleStation(AsyncWebServerRequest *request)
     stationSettings.beam = request->getParam(PARAM_BEAM)->value().toInt();
     stationSettings.bowoffset = request->getParam(PARAM_BOWOFFSET)->value().toInt();
     stationSettings.portoffset = request->getParam(PARAM_PORTOFFSET)->value().toInt();
+
+    Serial2.println("station " + stationSettings.mmsi + "," + stationSettings.mmsi + "," + stationSettings.callsign + "," + stationSettings.vesselname + "," + stationSettings.vesseltype + "," + stationSettings.loa + "," + stationSettings.beam + "," + stationSettings.bowoffset + "," + stationSettings.portoffset);
+    Serial2.print("station?\r\n");
   }
 
   AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -537,6 +557,7 @@ void handleSystem(AsyncWebServerRequest *request)
 
   serializeJson(json, *response);
   request->send(response);
+  Serial2.print("sys?\r\n");
 }
 
 void notFound(AsyncWebServerRequest *request)
@@ -550,6 +571,9 @@ void setup()
   Serial.begin(38400);
   Serial2.begin(38400); //, SERIAL_8N1, RXD2, TXD2);
   testParsing();
+  Serial2.print("sys?\r\n");
+  Serial2.print("station?\r\n");
+  Serial2.print("tx?\r\n");
   WiFi.mode(WIFI_STA);
 
   //GPIO for switch
@@ -621,7 +645,23 @@ void loop()
   }
   if (Serial2.available())
   {
-    Serial.write(Serial2.read());
+    char c = Serial2.read();
+
+    nmeaLine[nmeaPos] = c;
+    nmeaPos++;
+
+    if (nmeaPos >= NMEALEN)
+    {
+      nmeaPos = 0;
+    }
+
+    if (nmeaLine[nmeaPos - 1] == '\r' && nmeaLine[nmeaPos] == '\n')
+    {
+      nmeaLine[nmeaPos - 1] = 0;
+      checkLine(nmeaLine);
+    }
+
+    Serial.write(c);
   }
 
   //switch
@@ -636,6 +676,14 @@ void loop()
 
   if (configMode)
   {
+    if ((millis() - blinkMillis) / 1000 >= BLINK_SEC)
+    {
+      blinkState != blinkState;
+      Serial2.print("tx?\r\n");
+
+      blinkMillis = millis();
+    }
+
     uint16_t confSecSince = (millis() - configStarted) / 1000;
     infoState.configTimeout = CONFIG_TIMEOUT - confSecSince;
     if (confSecSince >= CONFIG_TIMEOUT)
