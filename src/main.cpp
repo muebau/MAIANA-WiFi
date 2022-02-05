@@ -6,12 +6,15 @@
 
 //webserver
 #include <WiFi.h>
+#include <ESPmDNS.h>
 
 #include <FS.h>
 #include <SPIFFS.h>
 
 //#include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <AsyncUDP.h>
+#include <AsyncTCP.h>
 
 #define DEBUG(X)          \
   Serial.print(__LINE__); \
@@ -93,10 +96,14 @@ unsigned long configStarted = 0;
 #define BLINK_SEC 2
 unsigned long blinkMillis = 0;
 bool blinkState = false;
-
-//webserver
+bool mDNSOK = false;
+bool networkOK = false;
+bool udpForwaredOK = false;
+bool tcpForwaredOK = false;
 
 AsyncWebServer server(80);
+AsyncUDP udp;
+AsyncServer tcp(10110);
 
 #define NMEALEN 84
 char nmeaLine[NMEALEN] = "";
@@ -565,41 +572,8 @@ void notFound(AsyncWebServerRequest *request)
   request->send(404, "text/plain", "Not found");
 }
 
-void setup()
+void setupWebServer()
 {
-  //general
-  Serial.begin(38400);
-  Serial2.begin(38400); //, SERIAL_8N1, RXD2, TXD2);
-  testParsing();
-  Serial2.print("sys?\r\n");
-  Serial2.print("station?\r\n");
-  Serial2.print("tx?\r\n");
-  WiFi.mode(WIFI_STA);
-
-  //GPIO for switch
-  pinMode(SWITCH, INPUT_PULLUP);
-  pinMode(LED_BUILTIN, OUTPUT);
-
-  //webserver
-  // Initialize spiffs
-  if (!SPIFFS.begin())
-  {
-    Serial.println("An Error has occurred while mounting SPIFFS");
-    return;
-  }
-
-  WiFi.begin(ssidWebserver, passwordWebserver);
-  if (WiFi.waitForConnectResult() != WL_CONNECTED)
-  {
-    Serial.printf("WiFi Failed!\n");
-    return;
-  }
-  WiFi.scanNetworks(true);
-
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-  infoState.ip = WiFi.localIP().toString();
-
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(SPIFFS, "/index.html", "text/html"); });
 
@@ -632,13 +606,219 @@ void setup()
             { handleSystem(request); });
 
   server.onNotFound(notFound);
+}
 
-  //server.begin();
+void startWebServer()
+{
+  if (networkOK)
+  {
+    server.begin();
+    if (mDNSOK)
+    {
+      MDNS.addService("http", "tcp", 80);
+    }
+  }
+}
+
+void stopWebServer()
+{
+  if (mDNSOK)
+  {
+    mdns_service_remove("_http", "_tcp");
+  }
+  server.end();
+}
+
+void setupNMEAForward()
+{
+}
+
+void startNMEAForward()
+{
+  if (mDNSOK)
+  {
+    if (protocolSettings.type == "tcp")
+    {
+      MDNS.addService("nmea-0183", "tcp", protocolSettings.port);
+    }
+
+    if (protocolSettings.type == "udp")
+    {
+      MDNS.addService("nmea-0183", "udp", protocolSettings.port);
+    }
+  }
+}
+
+void stopNMEAForward()
+{
+  if (mDNSOK)
+  {
+    mdns_service_remove("_nmea-0183", "_tcp");
+    mdns_service_remove("_nmea-0183", "_udp");
+  }
+}
+
+void setupClientWiFi()
+{
+}
+void startClientWiFi()
+{
+}
+void stopClientWiFi()
+{
+}
+
+void setupAPWiFi()
+{
+}
+void startAPWiFi()
+{
+}
+void stopAPWiFi()
+{
+}
+
+void setupConfigWiFi()
+{
+  WiFi.mode(WIFI_STA);
+}
+
+void startConfigWiFi()
+{
+  WiFi.begin(ssidWebserver, passwordWebserver);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED)
+  {
+    Serial.printf("WiFi Failed!\n");
+    return;
+  }
+  WiFi.scanNetworks(true);
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+  infoState.ip = WiFi.localIP().toString();
+
+  mDNSOK = MDNS.begin("MAIANA");
+  if (!mDNSOK)
+  {
+    Serial.println("Error setting up MDNS responder!");
+  }
+  networkOK = true;
+}
+
+void stopConfigWiFi()
+{
+}
+
+void startConfigMode()
+{
+  configStarted = millis();
+  if (!configMode)
+  {
+    configMode = true;
+    startWebServer();
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+}
+
+void stopConfigMode()
+{
+  if (!configMode)
+  {
+    stopWebServer();
+    digitalWrite(BUILTIN_LED, LOW);
+    configMode = false;
+  }
+}
+
+void requestAISInfomation()
+{
+  Serial2.print("sys?\r\n");
+  Serial2.print("station?\r\n");
+  Serial2.print("tx?\r\n");
+}
+
+void configPoll()
+{
+  //switch
+
+  //0 = switch is pressed
+  if (digitalRead(SWITCH) == LOW)
+  {
+    startConfigMode();
+  }
+
+  if (configMode)
+  {
+    if ((millis() - blinkMillis) / 1000 >= BLINK_SEC)
+    {
+      blinkState = !blinkState;
+      digitalWrite(BUILTIN_LED, blinkState);
+      requestAISInfomation();
+      blinkMillis = millis();
+    }
+
+    uint16_t confSecSince = (millis() - configStarted) / 1000;
+    infoState.configTimeout = CONFIG_TIMEOUT - confSecSince;
+    if (confSecSince >= CONFIG_TIMEOUT)
+    {
+      stopConfigMode();
+    }
+  }
+}
+
+void setupFileSystem()
+{
+  if (!SPIFFS.begin())
+  {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+}
+
+void makeAndHadleLine(char c)
+{
+  nmeaLine[nmeaPos] = c;
+  nmeaPos++;
+
+  if (nmeaPos >= NMEALEN)
+  {
+    nmeaPos = 0;
+  }
+
+  if (nmeaLine[nmeaPos - 1] == '\r' && nmeaLine[nmeaPos] == '\n')
+  {
+    nmeaLine[nmeaPos - 1] = 0;
+    checkLine(nmeaLine);
+  }
+}
+
+void forwardIt()
+{
+  udp.broadcast("Anyone here?");
+}
+
+void setup()
+{
+  //general
+  Serial.begin(38400);
+  Serial2.begin(38400); //, SERIAL_8N1, RXD2, TXD2);
+
+  //TODO: remove test call
+  testParsing();
+
+  requestAISInfomation();
+
+  //GPIO for switch
+  pinMode(SWITCH, INPUT_PULLUP);
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  setupFileSystem();
+  setupConfigWiFi();
+  startConfigWiFi();
+  setupWebServer();
 }
 
 void loop()
 {
-
   //general
   if (Serial.available())
   {
@@ -647,52 +827,8 @@ void loop()
   if (Serial2.available())
   {
     char c = Serial2.read();
-
-    nmeaLine[nmeaPos] = c;
-    nmeaPos++;
-
-    if (nmeaPos >= NMEALEN)
-    {
-      nmeaPos = 0;
-    }
-
-    if (nmeaLine[nmeaPos - 1] == '\r' && nmeaLine[nmeaPos] == '\n')
-    {
-      nmeaLine[nmeaPos - 1] = 0;
-      checkLine(nmeaLine);
-    }
-
+    makeAndHadleLine(c);
     Serial.write(c);
   }
-
-  //switch
-
-  //0 = switch is pressed
-  if (digitalRead(SWITCH) == 0)
-  {
-    configStarted = millis();
-    configMode = true;
-    server.begin();
-    digitalWrite(LED_BUILTIN, HIGH);
-  }
-
-  if (configMode)
-  {
-    if ((millis() - blinkMillis) / 1000 >= BLINK_SEC)
-    {
-      blinkState != blinkState;
-      Serial2.print("tx?\r\n");
-
-      blinkMillis = millis();
-    }
-
-    uint16_t confSecSince = (millis() - configStarted) / 1000;
-    infoState.configTimeout = CONFIG_TIMEOUT - confSecSince;
-    if (confSecSince >= CONFIG_TIMEOUT)
-    {
-      server.end();
-      configMode = false;
-      digitalWrite(BUILTIN_LED, LOW);
-    }
-  }
+  configPoll();
 }
