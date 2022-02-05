@@ -578,6 +578,7 @@ void setup()
 
   //GPIO for switch
   pinMode(SWITCH, INPUT_PULLUP);
+  pinMode(LED_BUILTIN, OUTPUT);
 
   //webserver
   // Initialize spiffs
@@ -672,6 +673,7 @@ void loop()
     configStarted = millis();
     configMode = true;
     server.begin();
+    digitalWrite(LED_BUILTIN, HIGH);
   }
 
   if (configMode)
@@ -690,6 +692,7 @@ void loop()
     {
       server.end();
       configMode = false;
+      digitalWrite(BUILTIN_LED, LOW);
     }
   }
 }
