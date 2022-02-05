@@ -628,7 +628,7 @@
                 addTableRows(t, 
                     data.map(
                         net => [net.ssid, net.channel, net.rssi, net.secure > 0 ? "\u{1F512}" : "open"].map(
-                            e => buildElement({"type": "div", "attr": [["onclick", "document.getElementById(\"wifi-ssid\").value = net.ssid"]], "childs": e})
+                            e => buildElement({"type": "div", "attr": [["onclick", "document.getElementById(\"wifi-ssid\").value = '" + net.ssid + "'"]], "childs": e})
                         )
                     )
                 );
