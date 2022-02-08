@@ -107,7 +107,8 @@ bool tcpForwaredOK = false;
 
 AsyncWebServer server(80);
 AsyncUDP udp;
-AsyncServer tcp(10110);
+std::unique_ptr<AsyncServer> tcp;
+
 
 #define NMEALEN 84
 char nmeaLine[NMEALEN] = "";
@@ -679,16 +680,15 @@ void stopWebServer()
   server.end();
 }
 
-void setupNMEAForward()
-{
-}
-
 void startNMEAForward()
 {
+  stopNMEAForward();
   if (mDNSOK)
   {
     if (protocolSettings.type == "tcp")
     {
+      tcp.reset(new AsyncServer(protocolSettings.port));
+      tcp.get()->begin();
       MDNS.addService("nmea-0183", "tcp", protocolSettings.port);
     }
 
@@ -706,6 +706,8 @@ void stopNMEAForward()
     mdns_service_remove("_nmea-0183", "_tcp");
     mdns_service_remove("_nmea-0183", "_udp");
   }
+  tcp.get()->end();
+  tcp.release();
 }
 
 void setupClientWiFi()
