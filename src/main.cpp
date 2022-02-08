@@ -101,6 +101,10 @@ bool networkOK = false;
 bool udpForwaredOK = false;
 bool tcpForwaredOK = false;
 
+// Set config WifI credentials
+#define CONFIG_SSID "MAIANA"
+#define CONFIG_PASS "ais"
+
 AsyncWebServer server(80);
 AsyncUDP udp;
 std::unique_ptr<AsyncServer> tcp;
@@ -128,6 +132,50 @@ const char *PARAM_BOWOFFSET = "bowoffset";
 const char *PARAM_TOGGLE = "softtxtoggle";
 
 //---------------functions-----------------------------
+
+//announce all functions
+String getValue(String data, char separator, int index);
+void gpsTimeToStruct(String input);
+void stationDataToStruct(String input);
+void systemDataToStruct(String input);
+void txCfgToStruct(String input);
+void txToStruct(String input);
+void noiseFloorToStruct(String input);
+void checkLine(String line);
+void testParsing();
+void handleInfo(AsyncWebServerRequest *request);
+void handleTXstate(AsyncWebServerRequest *request);
+void handleScan(AsyncWebServerRequest *request);
+void handleWifi(AsyncWebServerRequest *request);
+void handleProtocol(AsyncWebServerRequest *request);
+void handleStation(AsyncWebServerRequest *request);
+void handleSystem(AsyncWebServerRequest *request);
+void notFound(AsyncWebServerRequest *request);
+void setupWebServer();
+void startWebServer();
+void stopWebServer();
+void setupNMEAForward();
+void startNMEAForward();
+void stopNMEAForward();
+void setupClientWiFi();
+void startClientWiFi();
+void stopClientWiFi();
+void setupAPWiFi();
+void startAPWiFi();
+void stopAPWiFi();
+void setupConfigWiFi();
+void startConfigWiFi();
+void stopConfigWiFi();
+void startConfigMode();
+void stopConfigMode();
+void stopWifi();
+void stopNetwork();
+void startNetwork();
+void requestAISInfomation();
+void configPoll();
+void setupFileSystem();
+void makeAndHadleLine(char c);
+void forwardIt();
 
 //general
 
@@ -485,7 +533,8 @@ void handleWifi(AsyncWebServerRequest *request)
     wifiSettings.type = request->getParam(PARAM_TYPE)->value();
     wifiSettings.ssid = request->getParam(PARAM_SSID)->value();
     wifiSettings.password = request->getParam(PARAM_PASSWORD)->value();
-    //TODO: cofigure WiFi
+    startConfigWiFi();
+    startWebServer();
   }
 
   AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -520,6 +569,7 @@ void handleProtocol(AsyncWebServerRequest *request)
 
 void handleStation(AsyncWebServerRequest *request)
 {
+
   if (request->hasParam(PARAM_MMSI) && request->hasParam(PARAM_CALLSIGN) && request->hasParam(PARAM_VESSELNAME) && request->hasParam(PARAM_VESSELTYPE) && request->hasParam(PARAM_LOA) && request->hasParam(PARAM_BEAM) && request->hasParam(PARAM_PORTOFFSET) && request->hasParam(PARAM_BOWOFFSET))
   {
     stationSettings.mmsi = request->getParam(PARAM_MMSI)->value();
@@ -682,52 +732,77 @@ void stopNMEAForward()
 
 void setupClientWiFi()
 {
-}
-void startClientWiFi()
-{
-}
-void stopClientWiFi()
-{
-}
-
-void setupAPWiFi()
-{
-}
-void startAPWiFi()
-{
-}
-void stopAPWiFi()
-{
-}
-
-void setupConfigWiFi()
-{
   WiFi.mode(WIFI_STA);
 }
 
-void startConfigWiFi()
+void startClientWiFi()
 {
-  WiFi.begin(ssidWebserver, passwordWebserver);
+  WiFi.begin(wifiSettings.ssid.c_str(), wifiSettings.password.c_str());
   if (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
     Serial.printf("WiFi Failed!\n");
     return;
   }
+  startNetwork();
+}
+
+void stopClientWiFi()
+{
+  stopWifi();
+}
+
+void setupAPWiFi()
+{
+  WiFi.mode(WIFI_AP);
+}
+
+void startAPWiFi()
+{
+  WiFi.softAP(CONFIG_SSID, CONFIG_PASS);
+  startNetwork();
+}
+
+void stopAPWiFi()
+{
+  stopWifi();
+}
+
+void setupConfigWiFi()
+{
+  //WiFi.mode(WIFI_STA);
+}
+
+void startConfigWiFi()
+{
+  if (wifiSettings.type.equals("sta"))
+  {
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP(CONFIG_SSID, CONFIG_PASS);
+    WiFi.begin(wifiSettings.ssid.c_str(), wifiSettings.password.c_str());
+    if (WiFi.waitForConnectResult() != WL_CONNECTED)
+    {
+      Serial.printf("WiFi Failed!\n");
+      return;
+    }
+  }
+  // AP/none/undefined
+  else
+  {
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(CONFIG_SSID, CONFIG_PASS);
+  }
+
   WiFi.scanNetworks(true);
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
   infoState.ip = WiFi.localIP().toString();
 
-  mDNSOK = MDNS.begin("MAIANA");
-  if (!mDNSOK)
-  {
-    Serial.println("Error setting up MDNS responder!");
-  }
-  networkOK = true;
+  startNetwork();
 }
 
 void stopConfigWiFi()
 {
+  stopWifi();
 }
 
 void startConfigMode()
@@ -736,6 +811,7 @@ void startConfigMode()
   if (!configMode)
   {
     configMode = true;
+    startConfigWiFi();
     startWebServer();
     digitalWrite(LED_BUILTIN, HIGH);
   }
@@ -746,9 +822,43 @@ void stopConfigMode()
   if (!configMode)
   {
     stopWebServer();
+    stopConfigWiFi();
+    if (wifiSettings.type.equals("sta"))
+    {
+      setupClientWiFi();
+      startClientWiFi();
+    }
+    else if (wifiSettings.type.equals("ap"))
+    {
+      setupAPWiFi();
+      startAPWiFi();
+    }
     digitalWrite(BUILTIN_LED, LOW);
     configMode = false;
   }
+}
+
+void stopWifi()
+{
+  stopNetwork();
+  WiFi.mode(WIFI_OFF);
+}
+
+void stopNetwork()
+{
+  mDNSOK = false;
+  networkOK = false;
+  MDNS.end();
+}
+
+void startNetwork()
+{
+  mDNSOK = MDNS.begin("MAIANA");
+  if (!mDNSOK)
+  {
+    Serial.println("Error setting up MDNS responder!");
+  }
+  networkOK = true;
 }
 
 void requestAISInfomation()
