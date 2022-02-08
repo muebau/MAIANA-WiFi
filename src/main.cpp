@@ -109,7 +109,6 @@ AsyncWebServer server(80);
 AsyncUDP udp;
 std::unique_ptr<AsyncServer> tcp;
 
-
 #define NMEALEN 84
 char nmeaLine[NMEALEN] = "";
 uint8_t nmeaPos = 0;
@@ -176,6 +175,10 @@ void configPoll();
 void setupFileSystem();
 void makeAndHadleLine(char c);
 void forwardIt(const char *line);
+void safeWifiToFile();
+void safeProtocolToFile();
+void readWifiFromFile();
+void readProtocolFromFile();
 
 //general
 
@@ -686,23 +689,21 @@ void setupNMEAForward()
 
 void startTCPNMEAForward(uint16_t port)
 {
-
 }
 
 void stopTCPNMEAForward()
 {
-
 }
 
 void startNMEAForward()
 {
   //first stop everything
   stopNMEAForward();
-  
-    if (protocolSettings.type == "tcp")
-    {
-      tcp.reset(new AsyncServer(protocolSettings.port));
-      tcp.get()->begin();
+
+  if (protocolSettings.type == "tcp")
+  {
+    tcp.reset(new AsyncServer(protocolSettings.port));
+    tcp.get()->begin();
     startTCPNMEAForward(protocolSettings.port);
     if (mDNSOK)
     {
@@ -710,9 +711,9 @@ void startNMEAForward()
     }
   }
 
-    if (protocolSettings.type == "udp")
-    {
-  udpForwaredOK = true;
+  if (protocolSettings.type == "udp")
+  {
+    udpForwaredOK = true;
 
     if (mDNSOK)
     {
@@ -942,6 +943,19 @@ void forwardIt(const char *line)
   }
 }
 
+void safeWifiToFile()
+{
+}
+void safeProtocolToFile()
+{
+}
+void readWifiFromFile()
+{
+}
+void readProtocolFromFile()
+{
+}
+
 void setup()
 {
   //general
@@ -958,9 +972,21 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
 
   setupFileSystem();
-  setupConfigWiFi();
-  startConfigWiFi();
-  setupWebServer();
+  //setupConfigWiFi();
+  //startConfigWiFi();
+  //setupWebServer();
+  readWifiFromFile();
+  readProtocolFromFile();
+  if (wifiSettings.type.equals("sta"))
+  {
+    setupClientWiFi();
+    startClientWiFi();
+  }
+  else if (wifiSettings.type.equals("ap"))
+  {
+    setupAPWiFi();
+    startAPWiFi();
+  }
 }
 
 void loop()
