@@ -175,7 +175,7 @@ void requestAISInfomation();
 void configPoll();
 void setupFileSystem();
 void makeAndHadleLine(char c);
-void forwardIt();
+void forwardIt(const char *line);
 
 //general
 
