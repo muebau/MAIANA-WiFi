@@ -689,6 +689,11 @@ void startTCPNMEAForward(uint16_t port)
 
 }
 
+void stopTCPNMEAForward()
+{
+
+}
+
 void startNMEAForward()
 {
   //first stop everything
@@ -928,8 +933,7 @@ void forwardIt(const char *line)
 {
   if (tcpForwaredOK)
   {
-//    tcp.get().
-//    udp.broadcast(line);
+    //tcp.get()->begin();
   }
 
   if (udpForwaredOK)
