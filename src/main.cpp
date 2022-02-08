@@ -630,19 +630,36 @@ void stopWebServer()
   server.end();
 }
 
+void setupNMEAForward()
+{
+}
+
+void startTCPNMEAForward(uint16_t port)
+{
+
+}
+
 void startNMEAForward()
 {
+  //first stop everything
   stopNMEAForward();
-  if (mDNSOK)
-  {
+  
     if (protocolSettings.type == "tcp")
     {
       tcp.reset(new AsyncServer(protocolSettings.port));
       tcp.get()->begin();
+    startTCPNMEAForward(protocolSettings.port);
+    if (mDNSOK)
+    {
       MDNS.addService("nmea-0183", "tcp", protocolSettings.port);
     }
+  }
 
     if (protocolSettings.type == "udp")
+    {
+  udpForwaredOK = true;
+
+    if (mDNSOK)
     {
       MDNS.addService("nmea-0183", "udp", protocolSettings.port);
     }
@@ -658,6 +675,9 @@ void stopNMEAForward()
   }
   tcp.get()->end();
   tcp.release();
+  stopTCPNMEAForward();
+  tcpForwaredOK = false;
+  udpForwaredOK = false;
 }
 
 void setupClientWiFi()
@@ -776,7 +796,7 @@ void setupFileSystem()
   }
 }
 
-void makeAndHadleLine(char c)
+void createAndHadleLine(char c)
 {
   nmeaLine[nmeaPos] = c;
   nmeaPos++;
@@ -790,12 +810,22 @@ void makeAndHadleLine(char c)
   {
     nmeaLine[nmeaPos - 1] = 0;
     checkLine(nmeaLine);
+    forwardIt(nmeaLine);
   }
 }
 
-void forwardIt()
+void forwardIt(const char *line)
 {
-  udp.broadcast("Anyone here?");
+  if (tcpForwaredOK)
+  {
+//    tcp.get().
+//    udp.broadcast(line);
+  }
+
+  if (udpForwaredOK)
+  {
+    udp.broadcast(line);
+  }
 }
 
 void setup()
@@ -829,7 +859,7 @@ void loop()
   if (Serial2.available())
   {
     char c = Serial2.read();
-    makeAndHadleLine(c);
+    createAndHadleLine(c);
     Serial.write(c);
   }
   configPoll();
