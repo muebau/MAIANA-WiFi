@@ -174,7 +174,7 @@ void startNetwork();
 void requestAISInfomation();
 void configPoll();
 void setupFileSystem();
-void makeAndHadleLine(char c);
+void createAndHandleLine(char c);
 void forwardIt(const char *line);
 void safeWifiToFile();
 void safeProtocolToFile();
@@ -928,7 +928,7 @@ void setupFileSystem()
   }
 }
 
-void createAndHadleLine(char c)
+void createAndHandleLine(char c)
 {
   nmeaLine[nmeaPos] = c;
   nmeaPos++;
@@ -1025,7 +1025,7 @@ void loop()
   if (Serial2.available())
   {
     char c = Serial2.read();
-    createAndHadleLine(c);
+    createAndHandleLine(c);
     Serial.write(c);
   }
   configPoll();
