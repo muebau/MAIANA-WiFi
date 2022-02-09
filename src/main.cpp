@@ -1,10 +1,10 @@
 //------------------includes--------------------
 
-//general
+// general
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-//webserver
+// webserver
 #include <WiFi.h>
 #include <ESPmDNS.h>
 
@@ -23,7 +23,7 @@
 
 //---------------global variables and definitions-------------
 
-//general
+// general
 
 struct wifi
 {
@@ -100,6 +100,7 @@ bool mDNSOK = false;
 bool networkOK = false;
 bool udpForwaredOK = false;
 bool tcpForwaredOK = false;
+static std::vector<AsyncClient *> clients;
 
 // Set config WifI credentials
 #define CONFIG_SSID "MAIANA"
@@ -216,7 +217,7 @@ String getValue(String data, char separator, int index)
   return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
 
-//GPRMC
+// GPRMC
 void gpsTimeToStruct(String input)
 {
   if (getValue(input, ',', 2) == "A")
@@ -226,7 +227,7 @@ void gpsTimeToStruct(String input)
   }
 }
 
-//PAISTN
+// PAISTN
 void stationDataToStruct(String input)
 {
   stationSettings.mmsi = getValue(input, ',', 1);
@@ -239,7 +240,7 @@ void stationDataToStruct(String input)
   stationSettings.bowoffset = getValue(getValue(input, ',', 8), '*', 0).toInt();
 }
 
-//PAISYS
+// PAISYS
 void systemDataToStruct(String input)
 {
   systemSettings.hardwareRevision = getValue(input, ',', 1);
@@ -250,7 +251,7 @@ void systemDataToStruct(String input)
   systemSettings.bootloader = getValue(getValue(input, ',', 6), '*', 0);
 }
 
-//PAITXCFG
+// PAITXCFG
 void txCfgToStruct(String input)
 {
   txState.hardwarePresent = getValue(input, ',', 1);
@@ -260,7 +261,7 @@ void txCfgToStruct(String input)
   txState.status = getValue(getValue(input, ',', 5), '*', 0);
 }
 
-//PAITX,A,18*1C
+// PAITX,A,18*1C
 void txToStruct(String input)
 {
   if (getValue(input, ',', 1).startsWith("A"))
@@ -278,7 +279,7 @@ void txToStruct(String input)
   }
 }
 
-//PAINF,A,0x20*5B
+// PAINF,A,0x20*5B
 void noiseFloorToStruct(String input)
 {
   if (getValue(input, ',', 1).startsWith("A"))
@@ -302,10 +303,10 @@ void checkLine(String line)
     unsigned int len = msg.length() - 1;
     char checksum = 0;
 
-    //skip the first character
+    // skip the first character
     while (len > 0)
     {
-      //XOR
+      // XOR
       checksum ^= msg.charAt(len);
       len--;
     }
@@ -316,7 +317,7 @@ void checkLine(String line)
       checksumStr = "0" + checksumStr;
     }
 
-    if (checksumStr.equals(msgchecksum))
+    if (checksumStr == msgchecksum)
     {
       if (line.startsWith("$PAISTN"))
       {
@@ -361,7 +362,7 @@ void testParsing()
   checkLine("$PAISTN,987654321,NAUT,CALLSIGN23,37,23,42,34,84*36");
   checkLine("$PAITXCFG,2,3,4,5,6*0C");
   checkLine("$GNRMC,230121.000,A,5130.7862,N,00733.3069,E,0.09,117.11,010222,,,A,V*03");
-  /*
+
   Serial.print("wifiSettings.type = ");
   Serial.println(wifiSettings.type);
   Serial.print("wifiSettings.ssid = ");
@@ -369,11 +370,13 @@ void testParsing()
   Serial.print("wifiSettings.password = ");
   Serial.println(wifiSettings.password);
 
+  Serial.println("====================");
+
   Serial.print("protocolSettings.type = ");
   Serial.println(protocolSettings.type);
   Serial.print("protocolSettings.port = ");
   Serial.println(protocolSettings.port);
-*/
+
   Serial.println("====================");
 
   Serial.print("infoState.ip = ");
@@ -441,8 +444,7 @@ void testParsing()
   Serial.println(txState.channelBNoise);
 }
 
-//webserver
-
+// webserver
 void handleInfo(AsyncWebServerRequest *request)
 {
   AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -553,8 +555,14 @@ void handleProtocol(AsyncWebServerRequest *request)
   if (request->hasParam(PARAM_TYPE) && request->hasParam(PARAM_PORT))
   {
     protocolSettings.type = request->getParam(PARAM_TYPE)->value();
-    protocolSettings.port = request->getParam(PARAM_PORT)->value().toInt();
-    //TODO: configure forwarding
+    stopNMEAForward();
+
+    auto port = request->getParam(PARAM_PORT)->value().toInt();
+    if (port > 0 && port < 65536)
+    {
+      protocolSettings.port = port;
+      startNMEAForward();
+    }
   }
 
   AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -673,36 +681,45 @@ void startWebServer()
 
 void stopWebServer()
 {
-  if (mDNSOK)
-  {
+  //  if (mDNSOK)
+  //  {
     mdns_service_remove("_http", "_tcp");
-  }
+  //  }
   server.end();
 }
 
-void setupNMEAForward()
+static void handleNewClient(void *arg, AsyncClient *client)
 {
+  clients.push_back(client);
 }
 
 void startTCPNMEAForward(uint16_t port)
 {
-
+  if (networkOK)
+  {
+    tcp.reset(new AsyncServer(protocolSettings.port));
+    tcp.get()->onClient(&handleNewClient, tcp.get());
+    tcp.get()->begin();
+    tcpForwaredOK = true;
+  }
 }
 
 void stopTCPNMEAForward()
 {
-
+  tcpForwaredOK = false;
+  tcp.get()->end();
+  tcp.release();
 }
 
 void startNMEAForward()
 {
-  //first stop everything
+  // first stop everything
   stopNMEAForward();
   
+  if (protocolSettings.port > 0 && protocolSettings.port < 65536)
+  {
     if (protocolSettings.type == "tcp")
     {
-      tcp.reset(new AsyncServer(protocolSettings.port));
-      tcp.get()->begin();
     startTCPNMEAForward(protocolSettings.port);
     if (mDNSOK)
     {
@@ -713,25 +730,22 @@ void startNMEAForward()
     if (protocolSettings.type == "udp")
     {
   udpForwaredOK = true;
-
     if (mDNSOK)
     {
       MDNS.addService("nmea-0183", "udp", protocolSettings.port);
+      }
     }
   }
 }
 
 void stopNMEAForward()
 {
-  if (mDNSOK)
-  {
+  //  if (mDNSOK)
+  //  {
     mdns_service_remove("_nmea-0183", "_tcp");
     mdns_service_remove("_nmea-0183", "_udp");
-  }
-  tcp.get()->end();
-  tcp.release();
+  //  }
   stopTCPNMEAForward();
-  tcpForwaredOK = false;
   udpForwaredOK = false;
 }
 
@@ -774,12 +788,12 @@ void stopAPWiFi()
 
 void setupConfigWiFi()
 {
-  //WiFi.mode(WIFI_STA);
+  // WiFi.mode(WIFI_STA);
 }
 
 void startConfigWiFi()
 {
-  if (wifiSettings.type.equals("sta"))
+  if (wifiSettings.type == "sta")
   {
     WiFi.mode(WIFI_AP_STA);
     WiFi.softAP(CONFIG_SSID, CONFIG_PASS);
@@ -828,12 +842,12 @@ void stopConfigMode()
   {
     stopWebServer();
     stopConfigWiFi();
-    if (wifiSettings.type.equals("sta"))
+    if (wifiSettings.type == "sta")
     {
       setupClientWiFi();
       startClientWiFi();
     }
-    else if (wifiSettings.type.equals("ap"))
+    else if (wifiSettings.type == "ap")
     {
       setupAPWiFi();
       startAPWiFi();
@@ -851,8 +865,8 @@ void stopWifi()
 
 void stopNetwork()
 {
-  mDNSOK = false;
   networkOK = false;
+  mDNSOK = false;
   MDNS.end();
 }
 
@@ -875,9 +889,9 @@ void requestAISInfomation()
 
 void configPoll()
 {
-  //switch
+  // switch
 
-  //0 = switch is pressed
+  // 0 = switch is pressed
   if (digitalRead(SWITCH) == LOW)
   {
     startConfigMode();
@@ -931,29 +945,39 @@ void createAndHadleLine(char c)
 
 void forwardIt(const char *line)
 {
-  if (tcpForwaredOK)
+  if (networkOK && protocolSettings.port > 0 && protocolSettings.port < 65536)
   {
-    //tcp.get()->begin();
-  }
+    if (tcpForwaredOK)
+    {
+        String lineStr = String(line);
+        std::for_each(clients.begin(), clients.end(), [&](AsyncClient *n)
+                      {
+                      if (n->space() > lineStr.length() && n->canSend())
+                      {
+                        n->add(line, lineStr.length());
+                        n->send();
+                      } });
+    }
 
-  if (udpForwaredOK)
-  {
-    udp.broadcast(line);
+    if (udpForwaredOK)
+    {
+      udp.broadcastTo(line, protocolSettings.port);
+    }
   }
 }
 
 void setup()
 {
-  //general
+  // general
   Serial.begin(38400);
   Serial2.begin(38400); //, SERIAL_8N1, RXD2, TXD2);
 
-  //TODO: remove test call
+  // TODO: remove test call
   testParsing();
 
   requestAISInfomation();
 
-  //GPIO for switch
+  // GPIO for switch
   pinMode(SWITCH, INPUT_PULLUP);
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -965,7 +989,7 @@ void setup()
 
 void loop()
 {
-  //general
+  // general
   if (Serial.available())
   {
     Serial2.write(Serial.read());
