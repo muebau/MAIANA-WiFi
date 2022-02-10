@@ -660,6 +660,7 @@ void startWebServer()
 {
   if (networkOK)
   {
+    setupWebServer();
     server.begin();
     Serial.println("Webserver started");
     if (mDNSOK)
@@ -926,6 +927,7 @@ void setupFileSystem()
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
+  Serial.println("SPIFFS ready");
 }
 
 void createAndHandleLine(char c)
