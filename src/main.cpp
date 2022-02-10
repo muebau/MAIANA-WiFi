@@ -88,7 +88,7 @@ struct txState
 // switch
 
 #define SWITCH 4
-#define CONFIG_TIMEOUT 300
+#define CONFIG_TIMEOUT 3000
 bool configMode = false;
 // timestamp of the last time the switch was pressed
 unsigned long configStarted = 0;
