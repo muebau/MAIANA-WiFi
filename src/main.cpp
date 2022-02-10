@@ -661,6 +661,7 @@ void startWebServer()
   if (networkOK)
   {
     server.begin();
+    Serial.println("Webserver started");
     if (mDNSOK)
     {
       MDNS.addService("http", "tcp", 80);
@@ -675,6 +676,7 @@ void stopWebServer()
   mdns_service_remove("_http", "_tcp");
   //  }
   server.end();
+  Serial.println("Webserver stopped");
 }
 
 static void handleNewClient(void *arg, AsyncClient *client)
@@ -795,12 +797,14 @@ void startConfigWiFi()
       Serial.printf("WiFi Failed!\n");
       return;
     }
+    Serial.println("ConfigWiFi started as AP+STA");
   }
   // AP/none/undefined
   else
   {
     WiFi.mode(WIFI_AP);
     WiFi.softAP(CONFIG_SSID, CONFIG_PASS);
+    Serial.println("ConfigWiFi started as AP");
   }
 
   WiFi.scanNetworks(true);
@@ -819,6 +823,7 @@ void stopConfigWiFi()
 void startConfigMode()
 {
   configStarted = millis();
+  Serial.println("config interval resetted");
   if (!configMode)
   {
     configMode = true;
@@ -830,19 +835,22 @@ void startConfigMode()
 
 void stopConfigMode()
 {
-  if (!configMode)
+  if (configMode)
   {
     stopWebServer();
     stopConfigWiFi();
+    Serial.println("Webserver + ConfigWiFi stopped");
     if (wifiSettings.type == "sta")
     {
       setupClientWiFi();
       startClientWiFi();
+      Serial.println("ClientWiFi started");
     }
     else if (wifiSettings.type == "ap")
     {
       setupAPWiFi();
       startAPWiFi();
+      Serial.println("APWiFi started");
     }
     digitalWrite(BUILTIN_LED, LOW);
     configMode = false;
@@ -853,6 +861,7 @@ void stopWifi()
 {
   stopNetwork();
   WiFi.mode(WIFI_OFF);
+  Serial.println("WiFi stopped");
 }
 
 void stopNetwork()
@@ -860,6 +869,7 @@ void stopNetwork()
   networkOK = false;
   mDNSOK = false;
   MDNS.end();
+  Serial.println("Network stopped");
 }
 
 void startNetwork()
@@ -870,6 +880,7 @@ void startNetwork()
     Serial.println("Error setting up MDNS responder!");
   }
   networkOK = true;
+  Serial.println("Network started");
 }
 
 void requestAISInfomation()
@@ -948,7 +959,8 @@ void forwardIt(const char *line)
                       {
                         n->add(line, lineStr.length());
                         n->send();
-                      } });
+                      }
+                    });
     }
 
     if (udpForwaredOK)
