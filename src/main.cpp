@@ -85,12 +85,12 @@ struct txState
   String channelBNoise;
 } txState;
 
-//switch
+// switch
 
 #define SWITCH 4
 #define CONFIG_TIMEOUT 300
 bool configMode = false;
-//timestamp of the last time the switch was pressed
+// timestamp of the last time the switch was pressed
 unsigned long configStarted = 0;
 
 #define BLINK_SEC 2
@@ -104,7 +104,7 @@ static std::vector<AsyncClient *> clients;
 
 // Set config WifI credentials
 #define CONFIG_SSID "MAIANA"
-#define CONFIG_PASS "ais"
+#define CONFIG_PASS "MAIANA-AIS"
 
 AsyncWebServer server(80);
 AsyncUDP udp;
@@ -133,7 +133,7 @@ const char *PARAM_TOGGLE = "softtxtoggle";
 
 //---------------functions-----------------------------
 
-//announce all functions
+// announce all functions
 String getValue(String data, char separator, int index);
 void gpsTimeToStruct(String input);
 void stationDataToStruct(String input);
@@ -180,26 +180,6 @@ void safeWifiToFile();
 void safeProtocolToFile();
 void readWifiFromFile();
 void readProtocolFromFile();
-
-//general
-
-//read config
-//store config
-
-//start config mode
-//start normal operation
-
-//start TCP forward
-//stop TCP forward
-
-//start UDP forward
-//stop UDP forward
-
-//start WiFi AP
-//start WiFi cli
-
-//read from MAIANA
-//set config in MAIANA
 
 String getValue(String data, char separator, int index)
 {
@@ -366,6 +346,10 @@ void testParsing()
   checkLine("$PAITXCFG,2,3,4,5,6*0C");
   checkLine("$GNRMC,230121.000,A,5130.7862,N,00733.3069,E,0.09,117.11,010222,,,A,V*03");
 
+  wifiSettings.type = "sta";
+  wifiSettings.ssid = "ulfnet";
+  wifiSettings.password = "!=hierbinichmenschhierwillichsein44100$%";
+
   Serial.print("wifiSettings.type = ");
   Serial.println(wifiSettings.type);
   Serial.print("wifiSettings.ssid = ");
@@ -511,7 +495,9 @@ void handleScan(AsyncWebServerRequest *request)
     for (int i = 0; i < n; ++i)
     {
       if (i)
+      {
         json += ",";
+      }
       json += "{";
       json += "\"rssi\":" + String(WiFi.RSSI(i));
       json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
@@ -686,7 +672,7 @@ void stopWebServer()
 {
   //  if (mDNSOK)
   //  {
-    mdns_service_remove("_http", "_tcp");
+  mdns_service_remove("_http", "_tcp");
   //  }
   server.end();
 }
@@ -718,7 +704,7 @@ void startNMEAForward()
 {
   // first stop everything
   stopNMEAForward();
-  
+
   if (protocolSettings.port > 0 && protocolSettings.port < 65536)
   {
     if (protocolSettings.type == "tcp")
@@ -745,8 +731,8 @@ void stopNMEAForward()
 {
   //  if (mDNSOK)
   //  {
-    mdns_service_remove("_nmea-0183", "_tcp");
-    mdns_service_remove("_nmea-0183", "_udp");
+  mdns_service_remove("_nmea-0183", "_tcp");
+  mdns_service_remove("_nmea-0183", "_udp");
   //  }
   stopTCPNMEAForward();
   udpForwaredOK = false;
@@ -765,6 +751,9 @@ void startClientWiFi()
     Serial.printf("WiFi Failed!\n");
     return;
   }
+  Serial.print("Client IP is: ");
+  Serial.println(WiFi.localIP());
+
   startNetwork();
 }
 
@@ -952,9 +941,9 @@ void forwardIt(const char *line)
   {
     if (tcpForwaredOK)
     {
-        String lineStr = String(line);
-        std::for_each(clients.begin(), clients.end(), [&](AsyncClient *n)
-                      {
+      String lineStr = String(line);
+      std::for_each(clients.begin(), clients.end(), [&](AsyncClient *n)
+                    {
                       if (n->space() > lineStr.length() && n->canSend())
                       {
                         n->add(line, lineStr.length());
@@ -998,9 +987,9 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
 
   setupFileSystem();
-  //setupConfigWiFi();
-  //startConfigWiFi();
-  //setupWebServer();
+  // setupConfigWiFi();
+  // startConfigWiFi();
+  // setupWebServer();
   readWifiFromFile();
   readProtocolFromFile();
   if (wifiSettings.type.equals("sta"))
