@@ -86,7 +86,6 @@ struct txState
 } txState;
 
 // switch
-
 #define SWITCH 4
 
 //in seconds
@@ -116,8 +115,8 @@ std::unique_ptr<AsyncServer> tcp;
 char nmeaLine[NMEALEN] = "";
 uint8_t nmeaPos = 0;
 
-const char *ssidWebserver = "ulfnet";
-const char *passwordWebserver = "!=hierbinichmenschhierwillichsein44100$%";
+const char *ssidWebserver = "MAIANA";
+const char *passwordWebserver = "MAIANA-AIS";
 
 const char *PARAM_TYPE = "type";
 const char *PARAM_SSID = "ssid";
@@ -349,8 +348,8 @@ void testParsing()
   checkLine("$GNRMC,230121.000,A,5130.7862,N,00733.3069,E,0.09,117.11,010222,,,A,V*03");
 
   wifiSettings.type = "sta";
-  wifiSettings.ssid = "ulfnet";
-  wifiSettings.password = "!=hierbinichmenschhierwillichsein44100$%";
+  wifiSettings.ssid = "MAIANA";
+  wifiSettings.password = "MAIANA-AIS";
 
   Serial.print("wifiSettings.type = ");
   Serial.println(wifiSettings.type);
