@@ -38,7 +38,7 @@
             font-weight: 600;
         }
 
-        #infobox {
+        .infobox {
             display: block;
             background-color: #15172b;
             border-radius: 20px;
@@ -49,6 +49,35 @@
             align-items: center;
             color: #eee;
         }
+
+        .nmea0183box {
+
+            display: block;
+            background-color: #15172b;
+            border-radius: 20px;
+            box-sizing: border-box;
+            padding: 20px;
+            margin: 20px;
+            align-items: center;
+            color: #eee;
+        }
+
+        #messages {
+            background-color: #303245;
+            border: 0;
+            box-sizing: border-box;
+            color: #eee;
+            font-size: 14px;
+            height: 200px;
+            outline: 0;
+            /* padding: 4px 20px 0; */
+            max-width: 490px;
+            width: 100%;
+            text-align: left;
+            overflow: auto;
+        }
+
+
 
         legend {
             color: #eee;
@@ -161,6 +190,55 @@
         tr:nth-child(odd) {
             background-color: #303245;
         }
+
+        /* Custom checkbox styles */
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        input[type="checkbox"]+label {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            margin-right: 10px;
+            background-color: #ccc;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="checkbox"]+label::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        input[type="checkbox"]:checked+label {
+            background-color: #007bff;
+        }
+
+        input[type="checkbox"]:checked+label::before {
+            transform: translateX(20px);
+        }
+
+        .netselect {
+            display: flex;
+            background-color: #15172b;
+            border-radius: 20px;
+            box-sizing: border-box;
+            text-align: center;
+
+            align-items: center;
+            color: #eee;
+            width: 100%;
+        }
     </style>
     <link rel="icon" type="image/png"
         href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACqklEQVQ4T42SbUhTURjHn3Pu3VU3IUq02RKlog9qhGH4oYxK6ItUVKaohB96+1ZBL4ShrtIsKzT8kC9IQe+7YJgVkoWoqYGv2Nzm2DQkndNyq5b3lu6ezr2ytTU/dL6d55z/7+H5P38E/3GIIWUfYMgBQoywwNSjvP4vPhkK1J8oLIvFwjyuqSybDKyTJ8lxwHIJFLANEDoKIBWgw0Pd8h8/4HRx+XlBEK/TEq2RUYRQ5dx4YgPPZ3sJv6WS/twFEqkGaaEbGO4FiMIOdMTsUAC9w9Z1zW/eWqadTtU/E/URFuXXl+utxLBZB5hpoJAm2oCjjVah7MGSJYDJdqm9s7vUarOHOMKyjLsgL9eMGfwh1ZJZBpK6h0IKAKMzKGsgRwH0meyPJz5P5ra0vgsBxMethT0Zu0GSvO/TNm1MJ3zKfcBiCUBYMjo09GoJMGJ/SIDkN71qgZnZWT9kjVYLGTvToa2zC6Yczm+I/E67W1E6GtjFN8IFBOjGnMsFz5tfg9frBZ+4ta0dpp0zioYg1O8eT0yTjQ1aY4/ZnKAinJUWVbIPvQODcHBvJgSK/QKETtZW6OtCctA3YrtDN3hKfjCaLDA0/BHmBWG5mJnqbl5OCgEYOjqitZqoCXVEeLj8aLOPQXtXjzJOUKgIIWhxUVdXdc0RFKQaw8tGlmEObIiPg0h1hKKZc7uhk0KcM3+NpWUJExRbc0uvGKOYWGto3g6AO+Q7PaBbHQ0xUSvlC00vgckpB9jHP8EPj+eX2+W6WHW1sCpohNv3nhVp1JorssB3VCoWVmg0oNPG8CqWFSWQjIigp6lJ6ydC1njsXPH+MI5r1ERGYo7jlK6iKMJPj8fydcyYzPN8sBEBBH/L42eLtgLGWTQP8UBgXkJSvyDiB4+q9d+XW4Wv9gf1IB4gEyeL3wAAAABJRU5ErkJggg==" />
@@ -168,7 +246,7 @@
 
 <body>
     <h1>MAIANA<sup>&reg;</sup></h1>
-    <div id="infobox">
+    <div class="infobox" id="infobox">
         <div id="infotext">
         </div>
         <details>
@@ -179,6 +257,15 @@
         <button type="button" id="toggle-tx">toggle TX</button>
         <button type="button" id="refresh">load config</button>
     </div>
+    <details>
+        <summary>NMEA0183 Messages</summary>
+        <div class="nmea0183box">
+            <fieldset>
+                <legend>NMEA0183</legend>
+                <div class="input" id="messages">.</div>
+            </fieldset>
+        </div>
+    </details>
     <div>
         <form>
             <fieldset>
@@ -214,24 +301,31 @@
         </form>
     </div>
     <div>
-        <form>
+        <form width="">
             <fieldset>
                 <legend>NMEA0183 forwarding</legend>
-
-                <div class="radioButtons">
-                    <input type="radio" id="protocol-none" name="protocol" value="none" checked>
-                    <label for="protocol-none">NONE</label>
-
-                    <input type="radio" id="protocol-tcp" name="protocol" value="tcp">
-                    <label for="protocol-tcp">TCP</label>
-
-                    <input type="radio" id="protocol-udp" name="protocol" value="udp">
-                    <label for="protocol-udp">UDP</label>
+                <label for="tcp-port">TCP</label>
+                <div class="netselect" id="tcp" name="tcp">
+                    <input type="checkbox" id="tcp-enabled" name="tcp-enabled">
+                    <label for="tcp-enabled" style="margin-bottom: 20px;"></label>
+                    <input type="number" id="tcp-port" name="tcp-port" value="10110" min="1" max="65536"
+                        class="port-input">
                 </div>
+                <label for="udp-port">UDP</label>
+                <div class="netselect">
+                    <input type="checkbox" id="udp-enabled" name="udp-enabled">
+                    <label for="udp-enabled" style="margin-bottom: 20px;"></label>
+                    <input type="number" id="udp-port" name="udp-port" value="2000" min="1" max="65536"
+                        class="port-input">
+                </div>
+                <label for="websocket-port">WebSocket</label>
+                <div class="netselect">
+                    <input type="checkbox" id="websocket-enabled" name="websocket-enabled">
 
-                <label for="protocol-port">port</label>
-                <input type="number" id="protocol-port" name="port" value="10110" min="1" max="65536">
-
+                    <label for="websocket-enabled" style="margin-bottom: 20px;"></label>
+                    <input type="number" id="websocket-port" name="websocket-port" value="80" min="1" max="65536"
+                        class="port-input" disabled>
+                </div>
                 <button type="button" id="protocol-set">SET</button>
             </fieldset>
         </form>
@@ -279,13 +373,16 @@
                                 style="fill:none;stroke:white;stroke-width:3" />
                             <text id="beamText" x="50" y="230" fill="white">beam</text>
                             <line x1="30" y1="210" x2="170" y2="210" style="stroke:rgb(255,0,0);stroke-width:2" />
-                            <text id="loaText" x="170" y="-210" fill="white" transform="rotate(90)" id="text356">LOA</text>
+                            <text id="loaText" x="170" y="-210" fill="white" transform="rotate(90)"
+                                id="text356">LOA</text>
                             <line x1="200" y1="20" x2="200" y2="380" style="stroke:rgb(255,0,0);stroke-width:2" />
 
                             <polyline points="20,380 20,140 40,80 60,60 100,20 140,60 160,80 180,140 180,380 20,380"
                                 style="fill:none;stroke:white;stroke-width:3" transform="translate(220, 0)" />
-                            <line id="poLine" x1="240" y1="210" x2="400" y2="210" style="stroke:rgb(255,0,0);stroke-width:2" />
-                            <line id="boLine" x1="320" y1="20" x2="320" y2="380" style="stroke:rgb(255,0,0);stroke-width:2" />
+                            <line id="poLine" x1="240" y1="210" x2="400" y2="210"
+                                style="stroke:rgb(255,0,0);stroke-width:2" />
+                            <line id="boLine" x1="320" y1="20" x2="320" y2="380"
+                                style="stroke:rgb(255,0,0);stroke-width:2" />
                         </svg>
                     </div>
                 </details>
@@ -295,6 +392,42 @@
         </form>
     </div>
     <script>
+
+        var gateway = `ws://${window.location.hostname}/ws`;
+        var websocket;
+        var nmeas0183Lines = [];
+
+        function initWebSocket() {
+            console.log('Trying to open a WebSocket connection...');
+            websocket = new WebSocket(gateway);
+            websocket.onopen = onOpen;
+            websocket.onclose = onClose;
+            websocket.onmessage = onMessage; // <-- add this line
+        }
+        function onOpen(event) {
+            console.log('Connection opened');
+        }
+
+        function onClose(event) {
+            console.log('Connection closed');
+            setTimeout(initWebSocket, 2000);
+        }
+        function onMessage(event) {
+            // Show only 200 lines of log
+            nmeas0183Lines.push(event.data);
+            if (nmeas0183Lines.length > 200) {
+                nmeas0183Lines.shift();
+            }
+            var textarea = document.getElementById('messages');
+            textarea.innerHTML = nmeas0183Lines.join('<br>');
+            textarea.scrollTop = textarea.scrollHeight;
+        }
+        window.addEventListener('load', onLoad);
+        function onLoad(event) {
+            initWebSocket();
+
+        }
+
         function setFigureData(loa, beam, poffset, boffset) {
             let fig = document.getElementById("shipFigure");
             let loaText = document.getElementById("loaText");
@@ -320,10 +453,14 @@
         };
 
         document.getElementById('protocol-set').onclick = function () {
-            let type = document.querySelector('input[name="protocol"]:checked').value;
-            let port = document.getElementById('protocol-port').value;
+            let tcp = document.querySelector('input[name="tcp-enabled"]:checked') !== null;
+            let tcpPort = document.getElementById('tcp-port').value;
+            let udp = document.querySelector('input[name="udp-enabled"]:checked') !== null;
+            let udpPort = document.getElementById('udp-port').value;
+            let websocket = document.querySelector('input[name="websocket-enabled"]:checked') !== null;
+            let websocketPort = document.getElementById('websocket-port').value;
 
-            get("/protocol", { "type": type, "port": port }).then(data => {
+            get("/protocol", { "tcp": tcp, "tcpport": tcpPort, "udp": udp, "udpport": udpPort, "websocket": websocket, "websocketport": websocketPort }).then(data => {
             });
         };
 
@@ -425,6 +562,11 @@
                         [
                             "IP",
                             infoState.ip
+                        ],
+                        //signal
+                        [
+                            "Signal Strength",
+                            infoState.signal + " dBm"
                         ],
                         //Config Timeout (sec)
                         [
@@ -588,8 +730,16 @@
 
         function refresh_protocol() {
             get("/protocol").then(data => {
-                document.getElementById('protocol-' + data.type).checked = true;
-                document.getElementById('protocol-port').value = data.port;
+                document.getElementById('tcp-enabled').checked = data.tcp;
+                document.getElementById('tcp-port').value = data.tcpport;
+                document.getElementById('udp-enabled').checked = data.udp;
+                document.getElementById('udp-port').value = data.udpport;
+                document.getElementById('websocket-enabled').checked = data.websocket;
+                document.getElementById('websocket-port').value = data.websocketport;
+            }).then(() => {
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.dispatchEvent(new Event('change'));
+                });
             });
         }
 
@@ -606,11 +756,15 @@
             });
         }
 
-        document.getElementById('refresh').onclick = function () {
+        function refresh_all() {
             refresh_info();
             refresh_wifi();
             refresh_protocol();
             refresh_station();
+        };
+
+        document.getElementById('refresh').onclick = function () {
+            refresh_all();
         };
 
         document.getElementById('toggle-tx').onclick = function () {
@@ -628,10 +782,10 @@
                     }
                 );
 
-                addTableRows(t, 
+                addTableRows(t,
                     data.map(
                         net => [net.ssid, net.channel, net.rssi, net.secure > 0 ? "\u{1F512}" : "open"].map(
-                            e => buildElement({"type": "div", "attr": [["onclick", "document.getElementById(\"wifi-ssid\").value = '" + net.ssid + "'"]], "childs": e})
+                            e => buildElement({ "type": "div", "attr": [["onclick", "document.getElementById(\"wifi-ssid\").value = '" + net.ssid + "'"]], "childs": e })
                         )
                     )
                 );
@@ -642,6 +796,35 @@
         setInterval(() => {
             refresh_info();
         }, 5000);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const portCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            portCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const portInput = this.closest('div').querySelector('.port-input');
+                    if (this.checked) {
+                        // portInput.classList.remove('disabled-input');
+                        // portInput.removeAttribute('disabled');
+                        portInput.style.background = '#303245';
+                        //portInput.style.background = 'rgb(150 150 150)';
+
+
+                    } else {
+                        // portInput.classList.add('disabled-input');
+                        // portInput.setAttribute('disabled', 'disabled');
+                        portInput.style.background = 'rgb(150 150 150)';
+                        //   portInput.style.background = '#303245';
+
+                    }
+                });
+            });
+
+            // Initialize the state based on the checkbox
+            portCheckboxes.forEach(checkbox => {
+                checkbox.dispatchEvent(new Event('change'));
+            });
+            refresh_all();
+        });
     </script>
 </body>
 
