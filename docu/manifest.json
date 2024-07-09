@@ -1,0 +1,17 @@
+{
+    "name": "Maiana",
+    "version": "2024.07.0",
+    "home_assistant_domain": "esphome",
+    "funding_url": "https://github.com/marcelrv",
+    "builds": [
+        {
+            "chipFamily": "ESP32",
+            "parts": [
+                {
+                    "path": "firmware.bin",
+                    "offset": 0
+                }
+            ]
+        }
+    ]
+}
