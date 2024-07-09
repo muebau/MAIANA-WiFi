@@ -15,7 +15,7 @@ unsigned long ota_progress_millis = 0;
 
 void setupOTA( AsyncWebServer *server) {
     ElegantOTA.begin(server);  // Start ElegantOTA
-    ElegantOTA.setAutoReboot(false);
+    ElegantOTA.setAutoReboot(true);
 
     // ElegantOTA callbacks
     ElegantOTA.onStart(onOTAStart);
@@ -27,6 +27,7 @@ void onOTAStart() {
     // Log when OTA has started
     Serial.println("OTA update started!");
     // <Add your own code here>
+    SPIFFS.end();
 }
 
 void onOTAProgress(size_t current, size_t final) {

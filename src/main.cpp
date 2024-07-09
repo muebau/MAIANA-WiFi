@@ -16,7 +16,10 @@
 #include <ESPAsyncWebServer.h>
 
 #include "helperfunctions.h"
+
+#ifdef FAKEAIS
 #include "fakedata.h"
+#endif
 
 bool debug_logging = false;
 
@@ -124,6 +127,11 @@ std::unique_ptr<AsyncServer> tcp;
 char nmeaLine[NMEALEN] = "";
 uint8_t nmeaPos = 0;
 
+#define WIFICONFIGLINELEN 100
+char wifiConfigLine[WIFICONFIGLINELEN] = "";
+uint8_t wifiConfigPos = 0;
+bool wifiConfigLineReceiving = false;
+
 const char *ssidWebserver = "MAIANA";
 const char *passwordWebserver = "MAIANA-AIS";
 
@@ -149,7 +157,6 @@ const char *PARAM_BOWOFFSET = "bowoffset";
 const char *PARAM_TOGGLE = "softtxtoggle";
 
 //---------------functions-----------------------------
-
 
 // announce all functions
 String getValue(String data, char separator, int index);
@@ -341,7 +348,6 @@ void testParsing() {
     checkLine(
         "$GNRMC,230121.000,A,5130.7862,N,00733.3069,E,0.09,117.11,010222,,,A,V*"
         "03");
-
 
     Serial.print("wifiSettings.type = ");
     Serial.println(wifiSettings.type);
@@ -648,7 +654,7 @@ void setupWebServer() {
         request->send(SPIFFS, "/index.html", "text/html");
     });
 
-//    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+    //    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
     server.serveStatic("/js", SPIFFS, "/js/");
 
     // GET request /info
@@ -951,6 +957,53 @@ void setupFileSystem() {
     Serial.println("SPIFFS ready");
 }
 
+bool handleWifiConfigLine(char c) {
+    if (c == '{') {
+        wifiConfigPos = 0;
+        wifiConfigLineReceiving = true;
+    }
+    if (wifiConfigLineReceiving) {
+        wifiConfigLine[wifiConfigPos] = c;
+        wifiConfigPos++;
+    }
+    if (c == '}') {
+        wifiConfigLine[wifiConfigPos] = 0;
+        wifiConfigLineReceiving = false;
+        Serial.print("Configure wifi settings:");
+        Serial.println(&wifiConfigLine[0]);
+        if (wifiConfigPos == 0) {
+            Serial.println("wifi config line empty");
+            return true;
+        }
+        wifiConfigPos = 0;
+        StaticJsonDocument<512> doc;
+        DeserializationError error = deserializeJson(doc, wifiConfigLine);
+        if (error) {
+            Serial.print(F("wifi config line deserializeJson() failed: "));
+            Serial.println(error.f_str());
+            return true;
+        }
+        if (!doc.containsKey(PARAM_TYPE)) {
+            doc[PARAM_TYPE] = "sta";
+        }
+        if (doc.containsKey(PARAM_SSID) && doc.containsKey(PARAM_PASSWORD)) {
+            writeJsonFile(WIFI_SETTINGS_FILE, doc);
+            stopWifi();
+            loadWifiSettings();
+            startConfigWiFi();
+        } else {
+            Serial.println("wifi config line missing ssid or password");
+        }
+        return true;
+    }
+    if (wifiConfigPos >= WIFICONFIGLINELEN) {
+        wifiConfigPos = 0;
+        wifiConfigLineReceiving = false;
+        Serial.println("wifiConfigLine too long");
+    }
+    return wifiConfigLineReceiving;
+}
+
 void createAndHandleLine(char c) {
     nmeaLine[nmeaPos] = c;
 
@@ -967,14 +1020,6 @@ void createAndHandleLine(char c) {
         forwardIt(nmeaLine);
     }
     nmeaPos++;
-    /*
-nmeaLine[nmeaPos] = 0;
-    Serial.print(nmeaPos);
-    Serial.print(": ");
-
-// Serial.println(nmeaLine);
-Serial.println(&nmeaLine[1]);
-*/
 }
 
 void forwardIt(const char *line) {
@@ -1136,7 +1181,10 @@ long timerloop = 0;
 void loop() {
     // general
     if (Serial.available()) {
-        Serial2.write(Serial.read());
+        char s = Serial.read();
+        if (!handleWifiConfigLine(s)) {
+            Serial2.write(s);
+        }
     }
     if (Serial2.available()) {
         char c = Serial2.read();
@@ -1147,6 +1195,7 @@ void loop() {
     otaLoop();
     ws.cleanupClients();
 
+#ifdef FAKEAIS
     if (fakeAISData && millis() - timerloop > 5000) {
         timerloop = millis();
         String line = getRandomAISLine();
@@ -1154,4 +1203,5 @@ void loop() {
             createAndHandleLine(line[i]);
         }
     }
+#endif
 }
