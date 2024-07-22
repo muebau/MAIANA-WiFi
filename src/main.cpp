@@ -72,6 +72,8 @@ struct info {
     String configTimeout;
     String time;
     String date;
+    String mode;
+    long wifiReconnects;
 } infoState;
 
 struct txState {
@@ -206,6 +208,7 @@ void safeProtocolToFile();
 void readWifiFromFile();
 bool readProtocolFromFile();
 bool portIsValid(int port) { return port > 0 && port < 65536; }
+void websocketSend(const char *line);
 
 String getValue(String data, char separator, int index) {
     int found = 0;
@@ -309,7 +312,7 @@ void checkLine(String line) {
             checksumStr = "0" + checksumStr;
         }
 
-        if (checksumStr == msgchecksum) {
+        if (checksumStr == msgchecksum.substring(0, 2)) {
             if (line.startsWith("$PAISTN")) {
                 stationDataToStruct(line);
             }
@@ -346,7 +349,8 @@ void testParsing() {
     checkLine("$PAISTN,987654321,NAUT,CALLSIGN23,37,23,42,34,84*36");
     checkLine("$PAITXCFG,2,3,4,5,6*0C");
     checkLine(
-        "$GNRMC,230121.000,A,5130.7862,N,00733.3069,E,0.09,117.11,010222,,,A,V*"
+        "$GNRMC,230121.000,A,5130.7862,N,00733.3069,E,0.09,117.11,010222,,,"
+        "A,V*"
         "03");
 
     Serial.print("wifiSettings.type = ");
@@ -368,6 +372,8 @@ void testParsing() {
     Serial.println(protocolSettings.udpPort);
     Serial.print("protocolSettings.websocket = ");
     Serial.println(protocolSettings.websocket);
+    Serial.print("protocolSettings.websocketPort = ");
+    Serial.println(protocolSettings.websocketPort);
 
     Serial.println("====================");
 
@@ -447,6 +453,8 @@ void handleInfo(AsyncWebServerRequest *request) {
     json["time"] = infoState.time;
     json["date"] = infoState.date;
     json["signal"] = WiFi.RSSI();
+    json["wifiReconnects"] = infoState.wifiReconnects;
+    json["mode"] = infoState.mode;
 
     serializeJson(json, *response);
     request->send(response);
@@ -770,13 +778,17 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     Serial.println(info.wifi_sta_disconnected.reason);
     Serial.println("Trying to Reconnect");
     WiFi.begin(wifiSettings.ssid.c_str(), wifiSettings.password.c_str());
+    infoState.wifiReconnects = infoState.wifiReconnects + 1;
 }
 
 void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
     Serial.println("Connected to WiFi access point");
 }
 
-void setupClientWiFi() { WiFi.mode(WIFI_STA); }
+void setupClientWiFi() {
+    WiFi.mode(WIFI_STA);
+    infoState.mode = "Station";
+}
 
 void WiFiStationGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
     Serial.println("Connected to WiFi access point");
@@ -829,12 +841,14 @@ void startConfigWiFi() {
             return;
         }
         Serial.println("ConfigWiFi started as AP+STA");
+        infoState.mode = "Access Point + Station";
     }
     // AP/none/undefined
     else {
         WiFi.mode(WIFI_AP);
         WiFi.softAP(CONFIG_SSID, CONFIG_PASS);
         Serial.println("ConfigWiFi started as AP");
+        infoState.mode = "Access Point";
     }
 
     WiFi.scanNetworks(true);
@@ -1022,6 +1036,16 @@ void createAndHandleLine(char c) {
     nmeaPos++;
 }
 
+void websocketSend(const char *line) {
+    if (websocketOk) {
+        ws.textAll(line);
+        if (debug_logging) {
+            Serial.print("Websocket send: ");
+            Serial.println(line);
+        }
+    }
+}
+
 void forwardIt(const char *line) {
     // if (networkOK && protocolSettings.port > 0 &&
     //    protocolSettings.port < 65536) {
@@ -1043,12 +1067,8 @@ void forwardIt(const char *line) {
         };
     }
 
-    if (websocketOk) {
-        ws.textAll(line);
-        if (debug_logging) {
-            Serial.print("Websocket send: ");
-            Serial.println(line);
-        }
+    if (protocolSettings.websocket) {
+        websocketSend(line);
     }
 }
 
@@ -1161,7 +1181,9 @@ void setup() {
     // startConfigWiFi();
     // setupWebServer();
     readWifiFromFile();
+    infoState.wifiReconnects = 0;
     bool wifidetails = loadWifiSettings();
+    infoState.mode = "";
     readProtocolFromFile();
     if (wifidetails && wifiSettings.type.equals("sta")) {
         setupClientWiFi();

@@ -67,7 +67,7 @@
             border: 0;
             box-sizing: border-box;
             color: #eee;
-            font-size: 14px;
+            font-size: 10px;
             height: 200px;
             outline: 0;
             /* padding: 4px 20px 0; */
@@ -413,9 +413,9 @@
             setTimeout(initWebSocket, 2000);
         }
         function onMessage(event) {
-            // Show only 200 lines of log
+            // Show max 1000 lines of log
             nmeas0183Lines.push(event.data);
-            if (nmeas0183Lines.length > 200) {
+            if (nmeas0183Lines.length > 1000) {
                 nmeas0183Lines.shift();
             }
             var textarea = document.getElementById('messages');
@@ -556,7 +556,7 @@
                         //IP
                         [
                             "Network status",
-                            infoState.networkstatus
+                            infoState.mode
                         ],
                         //IP
                         [
@@ -567,6 +567,11 @@
                         [
                             "Signal Strength",
                             infoState.signal + " dBm"
+                        ],
+                        //wifi reconnects
+                        [
+                            "Wifi reconnects",
+                            infoState.wifiReconnects
                         ],
                         //Config Timeout (sec)
                         [
