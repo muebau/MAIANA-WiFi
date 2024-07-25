@@ -3,7 +3,7 @@
 <html>
 
 <head>
-        <title>Simple Map</title>
+        <title>MAIANA GPS Dashboard</title>
         <meta name="viewport" content="initial-scale=1.0">
         <meta charset="utf-8">
 
@@ -12,10 +12,50 @@
         <style>
                 body {
                         font-family: 'Oswald', sans-serif;
+                        align-items: center;
                         background-color: #000;
-                        color: rgb(192, 192, 192);
-
+                        justify-content: center;
+                        font-family: sans-serif;
+                        font-size: 18px;
+                        color: #eee;
+                        width: 90%;
+                        max-width: 600px;
                 }
+
+                .infobox {
+                        display: block;
+                        background-color: #15172b;
+                        border-radius: 20px;
+                        box-sizing: border-box;
+                        text-align: center;
+                        padding: 20px;
+                        margin: 20px;
+                        align-items: center;
+                        color: #eee;
+                }
+
+
+                table {
+                        width: 100%;
+                }
+
+                table td {
+                        padding: 10px;
+                }
+
+                table td:nth-child(1) {
+                        text-align: end;
+                }
+
+                table td:nth-child(2) {
+                        text-align: left;
+                }
+
+                tr:nth-child(odd) {
+                        background-color: #303245;
+                }
+
+
 
                 th {
                         text-align: right
@@ -25,16 +65,23 @@
 </head>
 
 <body>
+        <h1>MAIANA<sup>&reg;</sup> GPS Details</h1>
 
         <script src="js/gps.js"></script>
         <script src="js/d3.v7.min.js"></script>
         <script src="js/jquery-3.3.1.min.js"></script>
         <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.js"></script>
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> -->
-        <h1>Satellites</h1>
+
+        <div class="infobox" id="satbox" name="satbox" >
+                <h1>Satellites</h1>
+        </div>
+
+        <div class="infobox" id="speedbox" name="speedbox">
+                <h1>Speedometer</h1>
+        </div>
         <script>
-                //var gateway = `ws://${window.location.hostname}/ws`;
-                var gateway = `ws://192.168.8.50/ws`;
+                var gateway = `ws://${window.location.hostname}/ws`;
                 
                 var websocket;
                 var gps = new GPS;
@@ -42,7 +89,7 @@
                 var prev = { lat: null, lon: null };
 
                 gps.on('data', parsed => {
-                         console.log(parsed);
+                        console.log(parsed);
                         let state = gps.state;
                         console.log(state);
                         if (typeof state === 'undefined' || state === null) {
@@ -118,22 +165,23 @@
 
                 //Create SVG elements
 
-                var svgSky = d3.select("body")
+                var svgSky = d3.select("div")
                         .append("svg")
                         .attr("width", 250)
                         .attr("height", 250);
+                console.log(svgSky.txt);
 
-                var svgSat = d3.select("body")
+                var svgSat = d3.select("div")
                         .append("svg")
                         .attr("width", width)
                         .attr("height", barHeight + 50)
                         .append("g");
 
-                var svgSpeed = d3.select("body")
+                var svgSpeed = d3.select("#speedbox")
                         .append("svg")
-                        .style("position", "fixed")
-                        .style("right", "10px")
-                        .style("bottom", "10px")
+                      //  .style("position", "fixed")
+                    //    .style("right", "10px")
+                  //      .style("bottom", "10px")
                         .attr("width", 160)
                         .attr("height", 160)
                         .append("g");
@@ -487,58 +535,61 @@
                 }
 
         </script>
-        <h1>Information</h1>
-        <table>
-                <tr>
-                        <th>Date</th>
-                        <td id="date"></td>
-                </tr>
-                <tr>
-                        <th>Latitude</th>
-                        <td id="lat"></td>
-                </tr>
-                <tr>
-                        <th>Longitude</th>
-                        <td id="lon"></td>
-                </tr>
 
-                <tr>
-                        <th>Altitude</th>
-                        <td id="alt"></td>
-                </tr>
-                <tr>
-                        <th>Speed</th>
-                        <td id="speed"></td>
-                </tr>
-                <tr>
-                        <th>Status</th>
-                        <td id="status"></td>
-                </tr>
+        <div class="infobox" id="infobox">
 
-                <tr>
-                        <th>PDOP</th>
-                        <td id="pdop"></td>
-                </tr>
-                <tr>
-                        <th>VDOP</th>
-                        <td id="vdop"></td>
-                </tr>
-                <tr>
-                        <th>HDOP</th>
-                        <td id="hdop"></td>
-                </tr>
-                <tr>
-                        <th>Satellites in Use</th>
-                        <td id="active"></td>
-                </tr>
-                <tr>
-                        <th>Satellites in View</th>
-                        <td id="view"></td>
-                </tr>
+                <h1>Information</h1>
+                <table>
+                        <tr>
+                                <th>Date</th>
+                                <td id="date"></td>
+                        </tr>
+                        <tr>
+                                <th>Latitude</th>
+                                <td id="lat"></td>
+                        </tr>
+                        <tr>
+                                <th>Longitude</th>
+                                <td id="lon"></td>
+                        </tr>
+
+                        <tr>
+                                <th>Altitude</th>
+                                <td id="alt"></td>
+                        </tr>
+                        <tr>
+                                <th>Speed</th>
+                                <td id="speed"></td>
+                        </tr>
+                        <tr>
+                                <th>Status</th>
+                                <td id="status"></td>
+                        </tr>
+
+                        <tr>
+                                <th>PDOP</th>
+                                <td id="pdop"></td>
+                        </tr>
+                        <tr>
+                                <th>VDOP</th>
+                                <td id="vdop"></td>
+                        </tr>
+                        <tr>
+                                <th>HDOP</th>
+                                <td id="hdop"></td>
+                        </tr>
+                        <tr>
+                                <th>Satellites in Use</th>
+                                <td id="active"></td>
+                        </tr>
+                        <tr>
+                                <th>Satellites in View</th>
+                                <td id="view"></td>
+                        </tr>
 
 
-        </table>
-
+                </table>
+        </div>
 </body>
 
 </html>
