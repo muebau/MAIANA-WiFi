@@ -616,8 +616,8 @@ void handleStation(AsyncWebServerRequest *request) {
             "," + stationSettings.vesseltype + "," + stationSettings.loa + "," +
             stationSettings.beam + "," + stationSettings.bowoffset + "," +
             stationSettings.portoffset);
-        Serial2.print("station?\r\n");
     }
+    Serial2.print("station?\r\n");
 
     AsyncResponseStream *response =
         request->beginResponseStream("application/json");
@@ -662,6 +662,9 @@ void setupWebServer() {
         request->send(SPIFFS, "/index.html", "text/html");
     });
 
+    server.on("/dashboard.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/dashboard.html", "text/html");
+    });
     //    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
     server.serveStatic("/js", SPIFFS, "/js/");
 
@@ -934,6 +937,7 @@ bool loadWifiSettings() {
 }
 
 void requestAISInfomation() {
+  
     Serial2.print("sys?\r\n");
     Serial2.print("station?\r\n");
     Serial2.print("tx?\r\n");
@@ -1169,6 +1173,7 @@ void setup() {
     // general
     Serial.begin(38400);
     Serial2.begin(38400);  //, SERIAL_8N1, RXD2, TXD2);
+    requestAISInfomation();
 
     Serial.println("Maiana AIS Transponder forwarder started");
 
@@ -1193,9 +1198,9 @@ void setup() {
         startAPWiFi();
     }
     // TODO: remove test call
-    testParsing();
+    // testParsing();
+        requestAISInfomation();
 
-    requestAISInfomation();
 }
 
 long timerloop = 0;

@@ -228,6 +228,20 @@
             transform: translateX(20px);
         }
 
+
+        .nmeaselect {
+            display: flex;
+            background-color: #15172b;
+            border-radius: 20px;
+            box-sizing: border-box;
+            text-align: center;
+
+            align-items: center;
+            color: #eee;
+            width: 100%;
+        }
+
+
         .netselect {
             display: flex;
             background-color: #15172b;
@@ -255,15 +269,35 @@
             </div>
         </details>
         <button type="button" id="toggle-tx">toggle TX</button>
+        <a href="dashboard.html">
+            <button type="button" id="gpsdetail">GPS Details</button>
+        </a>
         <button type="button" id="refresh">load config</button>
     </div>
     <details>
         <summary>NMEA0183 Messages</summary>
         <div class="nmea0183box">
-            <fieldset>
-                <legend>NMEA0183</legend>
-                <div class="input" id="messages">.</div>
-            </fieldset>
+            <div style="display: flex; padding-bottom: 10px;"">
+                <div class=" nmeaselect" id="gps" name="gps">
+                <input type="checkbox" id="nmea-gps" name="nmea-gps" checked>
+                <label for="nmea-gps"></label>
+                GPS
+            </div>
+            <div class="nmeaselect" id="ais" name="ais">
+                <input type="checkbox" id="nmea-ais" name="nmea-ais" checked>
+                <label for="nmea-ais"></label>
+                AIS
+            </div>
+            <div class="nmeaselect" id="pai" name="pai">
+                <input type="checkbox" id="nmea-pai" name="nmea-pai" checked>
+                <label for="nmea-pai"></label>
+                Device
+            </div>
+        </div>
+        <fieldset>
+            <legend>NMEA0183</legend>
+            <div class="input" id="messages">Enable Websockets to see feed of NMEA0183 messages</div>
+        </fieldset>
         </div>
     </details>
     <div>
@@ -396,6 +430,7 @@
         var gateway = `ws://${window.location.hostname}/ws`;
         var websocket;
         var nmeas0183Lines = [];
+        var nmeavalues = {};
 
         function initWebSocket() {
             console.log('Trying to open a WebSocket connection...');
@@ -412,16 +447,24 @@
             console.log('Connection closed');
             setTimeout(initWebSocket, 2000);
         }
+
         function onMessage(event) {
             // Show max 1000 lines of log
-            nmeas0183Lines.push(event.data);
-            if (nmeas0183Lines.length > 1000) {
-                nmeas0183Lines.shift();
+            var nmeadata = event.data;
+            if ((nmeadata.startsWith('$G') && nmeavalues['gps'] == true) ||
+                (nmeadata.startsWith('$P') && nmeavalues['pai'] == true) ||
+                (nmeadata.startsWith('!') && nmeavalues['ais'] == true)) {
+
+                nmeas0183Lines.push(event.data);
+                if (nmeas0183Lines.length > 1000) {
+                    nmeas0183Lines.shift();
+                }
+                var textarea = document.getElementById('messages');
+                textarea.innerHTML = nmeas0183Lines.join('<br>');
+                textarea.scrollTop = textarea.scrollHeight;
             }
-            var textarea = document.getElementById('messages');
-            textarea.innerHTML = nmeas0183Lines.join('<br>');
-            textarea.scrollTop = textarea.scrollHeight;
         }
+
         window.addEventListener('load', onLoad);
         function onLoad(event) {
             initWebSocket();
@@ -535,6 +578,10 @@
         }
 
         function refresh_info() {
+            if (document.getElementById('station-mmsi').value === '') {
+                console.log('station data empty.. refreshing');
+                refresh_station();
+            }
             Promise.all([
                 get("/info"),
                 get("/txstate")]).
@@ -805,23 +852,31 @@
         document.addEventListener("DOMContentLoaded", function () {
             const portCheckboxes = document.querySelectorAll('input[type="checkbox"]');
             portCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function () {
-                    const portInput = this.closest('div').querySelector('.port-input');
-                    if (this.checked) {
-                        // portInput.classList.remove('disabled-input');
-                        // portInput.removeAttribute('disabled');
-                        portInput.style.background = '#303245';
-                        //portInput.style.background = 'rgb(150 150 150)';
+
+                if (checkbox.id.endsWith("-enabled")) {
+                    checkbox.addEventListener('change', function () {
+                        const portInput = this.closest('div').querySelector('.port-input');
+                        if (this.checked) {
+                            // portInput.classList.remove('disabled-input');
+                            // portInput.removeAttribute('disabled');
+                            portInput.style.background = '#303245';
+                            //portInput.style.background = 'rgb(150 150 150)';
 
 
-                    } else {
-                        // portInput.classList.add('disabled-input');
-                        // portInput.setAttribute('disabled', 'disabled');
-                        portInput.style.background = 'rgb(150 150 150)';
-                        //   portInput.style.background = '#303245';
+                        } else {
+                            // portInput.classList.add('disabled-input');
+                            // portInput.setAttribute('disabled', 'disabled');
+                            portInput.style.background = 'rgb(150 150 150)';
+                            //   portInput.style.background = '#303245';
 
-                    }
-                });
+                        }
+                    });
+                } else {
+                    checkbox.addEventListener('change', function () {
+                        console.log(this.id.slice(5, 8), this.checked)
+                        nmeavalues[this.id.slice(5, 8)] = this.checked;
+                    });
+                }
             });
 
             // Initialize the state based on the checkbox
