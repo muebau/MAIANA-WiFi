@@ -10,8 +10,8 @@ This way this adapter mades the AIS a stand alone system if wanted and the user 
 ## How it looks
 This is the latest version of the GUI
 
-![](../main/docu/img/ScreenshotMAIANA.png)
+![](docu/img/ScreenshotMAIANA.png)
 
 with a detailed view for the GPS information
 
-![](../main/docu/img/gpsDashboard.png)
+![](docu/img/gpsDashboard.png)

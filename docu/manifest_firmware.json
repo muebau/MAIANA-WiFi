@@ -8,7 +8,7 @@
             "chipFamily": "ESP32",
             "parts": [
                 {
-                    "path": "merged-flash.bin",
+                    "path": "flash.bin",
                     "offset": 0
                 }
             ]
