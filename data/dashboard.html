@@ -157,7 +157,7 @@
                 }
 
                 //Width and height
-                var width = 500;
+                var width = document.getElementById("satbox").offsetWidth - 40;
                 var barHeight = 100;
                 var padding = 1;
 
@@ -302,7 +302,7 @@
                         .attr("font-weight", "bold")
                         .attr("font-size", "13px")
                         .attr("fill", "rgb(192, 192, 192)")
-                        .text("kph");
+                        .text("kn");
 
                 svgSpeed.append("text")
                         .attr("x", centerX - 30 - 4)
@@ -409,6 +409,9 @@
                         var speed = data.speed;
 
                         textSpeed.text(speed);
+                        if (typeof speec === 'undefined' || speed === 'NaN' ){
+                                speed = 0;
+                        }
 
                         direction
                                 .style("transform", "translate(" + centerX + "px," + centerY + "px)rotate(" + data.bearing + "deg)");
@@ -423,7 +426,7 @@
                 }
 
                 function updateSatellite(data) {
-                        if (typeof data.satsVisible === "undefined") {
+                        if (typeof data.satsVisible === "undefined" || data.satsVisible.length === 0) {
                                 return;
                         }
 
@@ -447,31 +450,37 @@
                                 })
                                 .attr("y", function (d) {
                                         var v = d.snr || 0;
-                                        return barHeight - (v * 4);
+                                        return barHeight - (10 + v * 3);
                                 })
                                 .attr("width", width / data.satsVisible.length - padding)
                                 .attr("height", function (d) {
                                         var v = d.snr || 0;
-                                        return v * 4;
+                                        return 10 + v * 3;
                                 })
                                 .attr("fill", function (d) {
                                         var v = d.snr || 0;
-                                        if (-1 !== data.satsActive.indexOf(d.prn)) {
+                                        if (typeof data.satsActive !== 'undefined'  && -1 !== data.satsActive.indexOf(d.prn)) {
                                                 return "rgb(0, 0, " + (v * 10 | 0) + ")";
                                         }
                                         return "rgb(" + (v * 10 | 0) + ", 0, 50)";
+                                })
+                                .append("title")
+                                .text(function (d, i) {
+                                        var v = d.snr || 0;
+                                        return 'system: ' + d.system + '\r\nazimuth: ' + d.azimuth +  '\r\nelevation: ' + d.elevation + '\r\nsnr: ' + v;
                                 });
 
                         text
                                 .attr("x", function (d, i) {
-                                        return 15 + i * (width / data.satsVisible.length);
+                                        return  (i + 0.5) * (width / data.satsVisible.length);
                                 })
                                 .attr("y", barHeight + 20)
                                 .text(function (d) {
                                         return d.prn;
                                 })
-                                .attr("fill", "rgb(192, 192, 192)");
-
+                                .attr("fill", "rgb(192, 192, 192)")
+                                .attr("text-anchor", "middle") 
+                                .attr("font-size", "8");
                         rect
                                 .exit()
                                 .remove();
@@ -483,7 +492,7 @@
                 }
 
                 function updateSkyView(data) {
-                        if (typeof data.satsVisible === "undefined") {
+                        if (typeof data.satsVisible === "undefined" || data.satsVisible.length === 0) {
                                 return;
                         }
 
@@ -502,7 +511,7 @@
                                 .attr("r", 5)
                                 .attr("fill", function (d) {
                                         var v = d.snr || 10;
-                                        if (-1 !== data.satsActive.indexOf(d.prn)) {
+                                        if (typeof data.satsActive !== 'undefined' && -1 !== data.satsActive.indexOf(d.prn)) {
                                                 return "rgb(0, 0, " + (v * 10 | 0) + ")";
                                         }
                                         return "rgb(" + (v * 10 | 10) + ", 0, 0)";
@@ -526,10 +535,10 @@
                         $("#vdop").text(state.vdop);
                         $("#hdop").text(state.hdop);
 
-                        if (typeof state.satsActive.length !== "undefined") {
+                        if (typeof state.satsActive !== "undefined") {
                                 $("#active").text(state.satsActive.length);
                         }
-                        if (typeof state.satsVisible.length !== "undefined") {
+                        if (typeof state.satsVisible !== "undefined") {
                                 $("#view").text(state.satsVisible.length);
                         }
                 }
