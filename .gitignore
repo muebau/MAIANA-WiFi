@@ -10,3 +10,6 @@ wifi
 scan
 gps.dump.txt
 txstate
+data/*_local.html
+data/*.json
+testing/*
