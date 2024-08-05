@@ -30,4 +30,16 @@ bool loadJsonFile(String filename, JsonDocument& doc);
 /// @return Returns true if the JSON file was successfully written, false otherwise.
 bool writeJsonFile(String filename, JsonDocument &doc);
 
+/// @brief Extracts a value from a string using a separator and index.
+/// 
+/// This function extracts a value from a string based on a separator and index. It splits the string into multiple parts using the separator,
+/// and returns the value at the specified index.
+/// 
+/// @param data The string to extract the value from.
+/// @param separator The character used as a separator.
+/// @param index The index of the value to extract.
+/// 
+/// @return Returns the extracted value as a string.
+String getValue(String data, char separator, int index);
+
 #endif /* HELPERFUNCTIONS_H */

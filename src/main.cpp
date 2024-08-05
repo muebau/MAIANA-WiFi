@@ -11,6 +11,7 @@
 #include <WiFi.h>
 
 // #include <AsyncTCP.h>
+
 #include <AsyncTCP.h>
 #include <AsyncUDP.h>
 #include <ESPAsyncWebServer.h>
@@ -19,6 +20,10 @@
 
 #ifdef FAKEAIS
 #include "fakedata.h"
+#endif
+
+#ifdef AISMEMORY
+#include "aisstore.h"
 #endif
 
 bool debug_logging = false;
@@ -161,7 +166,6 @@ const char *PARAM_TOGGLE = "softtxtoggle";
 //---------------functions-----------------------------
 
 // announce all functions
-String getValue(String data, char separator, int index);
 void gpsTimeToStruct(String input);
 void stationDataToStruct(String input);
 void systemDataToStruct(String input);
@@ -209,22 +213,6 @@ void readWifiFromFile();
 bool readProtocolFromFile();
 bool portIsValid(int port) { return port > 0 && port < 65536; }
 void websocketSend(const char *line);
-
-String getValue(String data, char separator, int index) {
-    int found = 0;
-    int strIndex[] = {0, -1};
-    int maxIndex = data.length() - 1;
-
-    for (int i = 0; i <= maxIndex && found <= index; i++) {
-        if (data.charAt(i) == separator || i == maxIndex) {
-            found++;
-            strIndex[0] = strIndex[1] + 1;
-            strIndex[1] = (i == maxIndex) ? i + 1 : i;
-        }
-    }
-
-    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
-}
 
 // GPRMC
 void gpsTimeToStruct(String input) {
@@ -720,8 +708,42 @@ void stopWebServer() {
     Serial.println("Webserver stopped");
 }
 
+static void handleData(void *arg, AsyncClient *client, void *data, size_t len) {
+    Serial.printf("\n data received from client %s :",
+                  client->remoteIP().toString().c_str());
+    char *d = (char *)data;
+    d[len] = 0;
+    //    Serial.print("TCP Received: ");
+    Serial.println(d);
+
+    // TODO: forward this to serial2
+    //    Serial2.print(d);
+    // For debugging treat it as input from the serial port
+    for (size_t i = 0; i < len; i++) {
+        createAndHandleLine(d[i]);
+    }
+}
+
 static void handleNewClient(void *arg, AsyncClient *client) {
     clients.push_back(client);
+    client->onData(&handleData, NULL);
+
+#ifdef AISMEMORY
+    std::map<std::string, std::string> ais_messages = getAISMessages();
+    std::map<std::string, std::string>::iterator it;
+
+    for (it = ais_messages.begin(); it != ais_messages.end(); it++) {
+        if (debug_logging) {
+            Serial.print(it->first.c_str());
+            Serial.print(" : ");
+            Serial.println(it->second.c_str());
+        }
+        if (client->space() > it->second.length() && client->canSend()) {
+            client->add(it->second.c_str(), it->second.length());
+            client->send();
+        }
+    }
+#endif
 }
 
 void startTCPNMEAForward(uint16_t port) {
@@ -937,7 +959,6 @@ bool loadWifiSettings() {
 }
 
 void requestAISInfomation() {
-  
     Serial2.print("sys?\r\n");
     Serial2.print("station?\r\n");
     Serial2.print("tx?\r\n");
@@ -1074,6 +1095,11 @@ void forwardIt(const char *line) {
     if (protocolSettings.websocket) {
         websocketSend(line);
     }
+#ifdef AISMEMORY
+    if (line[0] == '!' && line[1] == 'A') {
+        storeAIS(line);
+    }
+#endif
 }
 
 void safeWifiToFile() {}
@@ -1198,7 +1224,7 @@ void setup() {
         startAPWiFi();
     }
     // TODO: remove test call
-    // testParsing();
+     testParsing();
         requestAISInfomation();
 
 }
@@ -1221,6 +1247,10 @@ void loop() {
     configPoll();
     otaLoop();
     ws.cleanupClients();
+
+#ifdef AISMEMORY
+    ais_store_cleanup_loop();
+#endif
 
 #ifdef FAKEAIS
     if (fakeAISData && millis() - timerloop > 5000) {
