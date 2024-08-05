@@ -12,4 +12,5 @@ gps.dump.txt
 txstate
 data/*_local.html
 data/*.json
+platformio_upload.py
 testing/*
