@@ -13,52 +13,22 @@
 </head>
 
 <body>
-    <h1>MAIANA<sup>&reg;</sup></h1>
+    <h1>MAIANA<sup>&reg;</sup> Config</h1>
+
+
     <div class="infobox" id="linkbuttons">
         <div class="menulink">
-            <a href="/" style="background-color: #06b;"> Home </a>
-            <a href="ais.html"> AIS Home </a>
+            <a href="/"> Home </a>
             <a href="dashboard.html">GPS</a>
-            <a href="config.html">Config </a>
+            <a href="config.html" style="background-color: #06b;">Config </a>
         </div>
     </div>
+
     <div class="infobox" id="infobox">
-        <div id="infotext">
-        </div>
-        <details>
-            <summary>more info</summary>
-            <div id="infodetails">
-            </div>
-        </details>
-        <button type="button" id="toggle-tx">toggle TX</button>
-        <button type="button" id="refresh">load config</button>
+        <button type="button" id="refresh" style="margin-top: 0px; margin-bottom: 0%;">Reload Config</button>
     </div>
-    <details>
-        <summary>NMEA0183 Messages</summary>
-        <div class="nmea0183box">
-            <div style="display: flex; padding-bottom: 10px;"">
-                <div class=" nmeaselect" id="gps" name="gps">
-                <input type="checkbox" id="nmea-gps" name="nmea-gps" checked>
-                <label for="nmea-gps"></label>
-                GPS
-            </div>
-            <div class="nmeaselect" id="ais" name="ais">
-                <input type="checkbox" id="nmea-ais" name="nmea-ais" checked>
-                <label for="nmea-ais"></label>
-                AIS
-            </div>
-            <div class="nmeaselect" id="pai" name="pai">
-                <input type="checkbox" id="nmea-pai" name="nmea-pai" checked>
-                <label for="nmea-pai"></label>
-                Device
-            </div>
-        </div>
-        <fieldset>
-            <legend>NMEA0183</legend>
-            <div class="input" id="messages">Enable Websockets to see feed of NMEA0183 messages</div>
-        </fieldset>
-        </div>
-    </details>
+
+
     <div>
         <form>
             <fieldset>
@@ -215,8 +185,8 @@
             if ((nmeadata.startsWith('$G') && nmeavalues['gps'] == true) ||
                 (nmeadata.startsWith('$P') && nmeavalues['pai'] == true) ||
                 (nmeadata.startsWith('!') && nmeavalues['ais'] == true)) {
-
                 nmeas0183Lines.push(event.data);
+
                 if (nmeas0183Lines.length > 1000) {
                     nmeas0183Lines.shift();
                 }
@@ -241,6 +211,7 @@
         function get(url, params) {
             url += '?' + new URLSearchParams(params).toString();
             url = development_ip == "" ? url : `http://${development_ip}${url}`
+
             return fetch(url).then(data => data.json());
         }
 
@@ -343,194 +314,6 @@
                 console.log('station data empty.. refreshing');
                 refresh_station();
             }
-            Promise.all([
-                get("/info"),
-                get("/txstate")]).
-                then((results) => {
-                    let infoState = results[0];
-                    let txState = results[1];
-                    let r, c;
-
-                    //TIME
-                    let time = dateFromDigits(infoState.time, infoState.date);
-                    let lastChA = dateFromDigits(txState.channelALastTime, txState.channelALastDate);
-                    let lastChB = dateFromDigits(txState.channelBLastTime, txState.channelBLastDate);
-
-                    box = document.getElementById('infotext');
-                    box.innerHTML = "";
-
-                    let table = document.createElement("table");
-                    addTableRows(table, [
-                        //IP
-                        [
-                            "Network status",
-                            infoState.mode
-                        ],
-                        //IP
-                        [
-                            "IP",
-                            infoState.ip
-                        ],
-                        //signal
-                        [
-                            "Signal Strength",
-                            infoState.signal + " dBm"
-                        ],
-                        //wifi reconnects
-                        [
-                            "Wifi reconnects",
-                            infoState.wifiReconnects
-                        ],
-                        //Config Timeout (sec)
-                        [
-                            "Config Timeout (sec)",
-                            infoState.configTimeout
-                        ],
-                    ]);
-                    box.appendChild(table);
-
-                    boxdetails = document.getElementById('infodetails');
-                    boxdetails.innerHTML = "";
-
-                    table = document.createElement("table");
-                    addTableRows(table, [
-                        //Hardware Present
-                        [
-                            "Hardware Present",
-                            txState.hardwarePresent == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Hardware Switch
-                        [
-                            "Hardware TX Switch",
-                            txState.hardwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Software TX Switch
-                        [
-                            "Software TX Switch",
-                            txState.softwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Station data provided
-                        [
-                            "Station data provided",
-                            txState.stationData == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //TX status
-                        [
-                            "TX status",
-                            txState.status == "1" ? "\u{2705} (transmitting)" : "\u{26D4}\u{FE0F} (not transmitting)"
-                        ],
-                        //GPS time (local)
-                        [
-                            "GPS time (local)",
-                            {
-                                "type": "time",
-                                "attr": [
-                                    ["datetime", time.toISOString()]
-                                ],
-                                "childs": time.toLocaleString()
-                            },
-                        ],
-                        //GPS time (UTC)
-                        [
-                            "GPS time (UTC)",
-                            {
-                                "type": "time",
-                                "attr": [
-                                    ["datetime", time.toISOString()]
-                                ],
-                                "childs": time.toISOString()
-                            },
-                        ],
-                        //Last send channel A
-                        [
-                            "Last send channel A",
-                            [
-                                txState.channelALast,
-                                " (",
-                                {
-                                    "type": "time",
-                                    "attr": [
-                                        ["datetime", lastChA.toISOString()]
-                                    ],
-                                    "childs": lastChA.toLocaleTimeString()
-                                },
-                                ")"
-                            ]
-                        ],
-                        //Last send channel B
-                        [
-                            "Last send channel B",
-                            [
-                                txState.channelBLast,
-                                " (",
-                                {
-                                    "type": "time",
-                                    "attr": [
-                                        ["datetime", lastChB.toISOString()]
-                                    ],
-                                    "childs": lastChB.toLocaleTimeString()
-                                },
-                                ")"
-                            ]
-                        ],
-                        //Noise channel A
-                        [
-                            {
-                                "type": "label",
-                                "attr": [
-                                    ["for", "noiseChannelA"]
-                                ],
-                                "childs": "Noise channel A"
-                            },
-                            [
-                                {
-                                    "type": "meter",
-                                    "attr": [
-                                        ["id", "noiseChannelA"],
-                                        ["min", 0],
-                                        ["max", 255],
-                                        ["optimum", 10],
-                                        ["low", 33],
-                                        ["high", 64],
-                                        ["value", parseInt(txState.channelANoise, 16)],
-                                        ["title", "dB"]
-                                    ],
-                                    "childs": parseInt(txState.channelANoise, 16)
-                                },
-                                " (" + parseInt(txState.channelANoise, 16) + ")"
-                            ]
-                        ],
-                        //Noise channel B
-                        [
-                            {
-                                "type": "label",
-                                "attr": [
-                                    ["for", "noiseChannelB"]
-                                ],
-                                "childs": "Noise channel B"
-                            },
-                            [
-                                {
-                                    "type": "meter",
-                                    "attr": [
-                                        ["id", "noiseChannelB"],
-                                        ["min", 0],
-                                        ["max", 255],
-                                        ["optimum", 10],
-                                        ["low", 33],
-                                        ["high", 64],
-                                        ["value", parseInt(txState.channelBNoise, 16)],
-                                        ["title", "dB"]
-                                    ],
-                                    "childs": parseInt(txState.channelBNoise, 16)
-                                },
-                                " (" + parseInt(txState.channelBNoise, 16) + ")"
-                            ]
-
-                        ]
-                    ]);
-                    boxdetails.appendChild(table);
-                });
         }
 
         function refresh_wifi() {
@@ -580,11 +363,6 @@
             refresh_all();
         };
 
-        document.getElementById('toggle-tx').onclick = function () {
-            get("/txstate", { "softtxtoggle": 1 }).then(data => {
-            });
-        };
-
         document.getElementById('wifi-scan').onclick = function () {
             get("/scan").then(data => {
 
@@ -618,18 +396,9 @@
                     checkbox.addEventListener('change', function () {
                         const portInput = this.closest('div').querySelector('.port-input');
                         if (this.checked) {
-                            // portInput.classList.remove('disabled-input');
-                            // portInput.removeAttribute('disabled');
                             portInput.style.background = '#303245';
-                            //portInput.style.background = 'rgb(150 150 150)';
-
-
                         } else {
-                            // portInput.classList.add('disabled-input');
-                            // portInput.setAttribute('disabled', 'disabled');
                             portInput.style.background = 'rgb(150 150 150)';
-                            //   portInput.style.background = '#303245';
-
                         }
                     });
                 } else {

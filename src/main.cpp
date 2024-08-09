@@ -677,6 +677,14 @@ void setupWebServer() {
         request->send(SPIFFS, "/index.html", "text/html");
     });
 
+    server.on("/config.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/config.html", "text/html");
+    });
+
+    server.on("/ais.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/ais.html", "text/html");
+    });
+    
     server.on("/dashboard.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/dashboard.html", "text/html");
     });
@@ -739,7 +747,7 @@ static void handleData(void *arg, AsyncClient *client, void *data, size_t len) {
     Serial.printf("Data received from TCP client %s :",
                   client->remoteIP().toString().c_str());
     char *d = (char *)data;
-    d[len] = 0;    
+    d[len] = 0;
     Serial.println(d);
 
     // Forward to serial2 / Maiana
@@ -1220,7 +1228,8 @@ void sendHistoryWSChuncked(uint32_t client, long msgId) {
         if (ws.availableForWrite(client)) {
             ws.text(client, it->second.c_str());
         }
-        ws_queue_loop = millis(); //makes sure that the next run does not start prior finishing the earlier loop
+        ws_queue_loop = millis();  // makes sure that the next run does not
+                                   // start prior finishing the earlier loop
         if (i > msgId + WS_MAX_MESSAGES) {
             ws_queue_msgId = i;
             return;

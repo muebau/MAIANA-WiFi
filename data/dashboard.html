@@ -8,64 +8,19 @@
         <meta charset="utf-8">
 
         <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
-
-        <style>
-                body {
-                        font-family: 'Oswald', sans-serif;
-                        align-items: center;
-                        background-color: #000;
-                        justify-content: center;
-                        font-family: sans-serif;
-                        font-size: 18px;
-                        color: #eee;
-                        width: 90%;
-                        max-width: 600px;
-                }
-
-                .infobox {
-                        display: block;
-                        background-color: #15172b;
-                        border-radius: 20px;
-                        box-sizing: border-box;
-                        text-align: center;
-                        padding: 20px;
-                        margin: 20px;
-                        align-items: center;
-                        color: #eee;
-                }
-
-
-                table {
-                        width: 100%;
-                }
-
-                table td {
-                        padding: 10px;
-                }
-
-                table td:nth-child(1) {
-                        text-align: end;
-                }
-
-                table td:nth-child(2) {
-                        text-align: left;
-                }
-
-                tr:nth-child(odd) {
-                        background-color: #303245;
-                }
-
-
-
-                th {
-                        text-align: right
-                }
-        </style>
-
+        <link rel="stylesheet" type="text/css" href="js/style.css">
 </head>
 
 <body>
         <h1>MAIANA<sup>&reg;</sup> GPS Details</h1>
+
+        <div class="infobox" id="linkbuttons">
+                <div class="menulink">
+                        <a href="/"> Home </a>
+                        <a href="dashboard.html" style="background-color: #06b;">GPS</a>
+                        <a href="config.html">Config </a>
+                </div>
+        </div>
 
         <script src="js/gps.js"></script>
         <script src="js/d3.v7.min.js"></script>
@@ -73,7 +28,7 @@
         <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.js"></script>
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> -->
 
-        <div class="infobox" id="satbox" name="satbox" >
+        <div class="infobox" id="satbox" name="satbox">
                 <h1>Satellites</h1>
         </div>
 
@@ -81,8 +36,9 @@
                 <h1>Speedometer</h1>
         </div>
         <script>
-                var gateway = `ws://${window.location.hostname}/ws`;
-                
+                var development_ip = "192.168.3.196"
+                var gateway = development_ip == "" ? `ws://${window.location.hostname}/ws` : `ws://${development_ip}/ws`;
+
                 var websocket;
                 var gps = new GPS;
                 gps.state.bearing = 0;
@@ -165,13 +121,13 @@
 
                 //Create SVG elements
 
-                var svgSky = d3.select("div")
+                var svgSky = d3.select("#satbox")
                         .append("svg")
                         .attr("width", 250)
                         .attr("height", 250);
                 console.log(svgSky.txt);
 
-                var svgSat = d3.select("div")
+                var svgSat = d3.select("#satbox")
                         .append("svg")
                         .attr("width", width)
                         .attr("height", barHeight + 50)
@@ -179,9 +135,9 @@
 
                 var svgSpeed = d3.select("#speedbox")
                         .append("svg")
-                      //  .style("position", "fixed")
-                    //    .style("right", "10px")
-                  //      .style("bottom", "10px")
+                        //  .style("position", "fixed")
+                        //    .style("right", "10px")
+                        //      .style("bottom", "10px")
                         .attr("width", 160)
                         .attr("height", 160)
                         .append("g");
@@ -409,7 +365,7 @@
                         var speed = data.speed;
 
                         textSpeed.text(speed);
-                        if (typeof speec === 'undefined' || speed === 'NaN' ){
+                        if (typeof speec === 'undefined' || speed === 'NaN') {
                                 speed = 0;
                         }
 
@@ -459,7 +415,7 @@
                                 })
                                 .attr("fill", function (d) {
                                         var v = d.snr || 0;
-                                        if (typeof data.satsActive !== 'undefined'  && -1 !== data.satsActive.indexOf(d.prn)) {
+                                        if (typeof data.satsActive !== 'undefined' && -1 !== data.satsActive.indexOf(d.prn)) {
                                                 return "rgb(0, 0, " + (v * 10 | 0) + ")";
                                         }
                                         return "rgb(" + (v * 10 | 0) + ", 0, 50)";
@@ -467,19 +423,19 @@
                                 .append("title")
                                 .text(function (d, i) {
                                         var v = d.snr || 0;
-                                        return 'system: ' + d.system + '\r\nazimuth: ' + d.azimuth +  '\r\nelevation: ' + d.elevation + '\r\nsnr: ' + v;
+                                        return 'system: ' + d.system + '\r\nazimuth: ' + d.azimuth + '\r\nelevation: ' + d.elevation + '\r\nsnr: ' + v;
                                 });
 
                         text
                                 .attr("x", function (d, i) {
-                                        return  (i + 0.5) * (width / data.satsVisible.length);
+                                        return (i + 0.5) * (width / data.satsVisible.length);
                                 })
                                 .attr("y", barHeight + 20)
                                 .text(function (d) {
                                         return d.prn;
                                 })
                                 .attr("fill", "rgb(192, 192, 192)")
-                                .attr("text-anchor", "middle") 
+                                .attr("text-anchor", "middle")
                                 .attr("font-size", "8");
                         rect
                                 .exit()
