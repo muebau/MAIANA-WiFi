@@ -3,6 +3,6 @@
 
 #include <Arduino.h>
 
-String getRandomAISLine();
+String getDemoAISLine();
 
 #endif /* HELPERFUNCTIONS_H */

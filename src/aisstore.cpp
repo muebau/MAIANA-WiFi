@@ -9,10 +9,13 @@
 
 #include "helperfunctions.h"
 
+#define AIS_CLEANLOOP_INTERVAL 60000 // in ms
+#define AIS_MAX_AGE 7 * 60000 // in ms
+
 std::map<std::string, std::string> ais_messages;
 std::map<std::string, long> ais_messages_timer;
-long max_age = 30000;  // in ms
-long next_age_check = 0;
+
+long next_age_check = millis() + AIS_CLEANLOOP_INTERVAL;
 bool debug_logging_ais = true;
 
 std::map<std::string, std::string> getAISMessages() { return ais_messages; }
@@ -21,9 +24,12 @@ void storeAIS(const char* line) {
     String ais_value_only = getValue(line, ',', 5);
     AIS ais_msg(ais_value_only.c_str());
     unsigned long mmsi = ais_msg.get_mmsi();
+    unsigned int msg_type = ais_msg.get_numeric_type();
 
     std::string keyStr =
-        std::to_string(mmsi) + "-" + std::to_string(ais_msg.get_numeric_type());
+        std::to_string(mmsi) + "-" +
+        std::to_string(ais_msg.get_numeric_type()) +
+        (msg_type == 24 ? (ais_msg.get_partno() == 0 ? "A" : "B") : "");
 
     ais_messages[keyStr.c_str()] = line;
     ais_messages_timer[std::to_string(mmsi)] = millis();
@@ -38,10 +44,9 @@ void storeAIS(const char* line) {
 }
 
 void clear_aged_AIS() {
-    unsigned long age_limit = millis() - max_age;
+     long age_limit = long(millis()) - AIS_MAX_AGE;
     for (auto it = ais_messages_timer.begin();
          it != ais_messages_timer.end();) {
-
         if (debug_logging_ais) {
             Serial.print("mssi: ");
             Serial.print(it->first.c_str());
@@ -79,12 +84,11 @@ void ais_store_cleanup_loop() {
         if (debug_logging_ais) {
             Serial.print("Scheduled cleanup. We have ");
             Serial.print(ais_messages_timer.size());
-            Serial.println(" unique MMSIs with ");
+            Serial.print(" unique MMSIs with ");
             Serial.print(ais_messages.size());
-            Serial.print(" AIS message stored.");
+            Serial.println(" AIS message stored.");
         }
-
-        next_age_check = millis() + 60000;
+        next_age_check = millis() + AIS_CLEANLOOP_INTERVAL;
         clear_aged_AIS();
     }
 }

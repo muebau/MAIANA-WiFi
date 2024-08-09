@@ -18,12 +18,22 @@
 
 #include "helperfunctions.h"
 
-#ifdef FAKEAIS
+#define CORS_HEADER  // For webdevelopment purpose. Adds CORS header
+
+#ifdef FAKEAIS  // Adds demo messages. TODO: enable/disable via config menu
 #include "fakedata.h"
+bool fakeAISData = true;
+long timerloop = millis() + 10000L;
 #endif
 
-#ifdef AISMEMORY
+#ifdef AISMEMORY  // Stores the latest10 minutes of unique AIS messages and
+                  // resend on connect of a client
 #include "aisstore.h"
+uint32_t ws_queue_client = 0;
+long ws_queue_msgId = -1;
+long ws_queue_loop = millis() + 1000L;
+#define WS_MAX_MESSAGES 20
+
 #endif
 
 bool debug_logging = false;
@@ -114,7 +124,6 @@ bool networkOK = false;
 bool udpForwaredOK = false;
 bool tcpForwaredOK = false;
 bool websocketOk = false;
-bool fakeAISData = false;
 
 static std::vector<AsyncClient *> clients;
 
@@ -445,6 +454,9 @@ void handleInfo(AsyncWebServerRequest *request) {
     json["mode"] = infoState.mode;
 
     serializeJson(json, *response);
+#ifdef CORS_HEADER
+    response->addHeader("Access-Control-Allow-Origin", "*");
+#endif
     request->send(response);
 }
 
@@ -477,6 +489,9 @@ void handleTXstate(AsyncWebServerRequest *request) {
     json["channelBNoise"] = txState.channelBNoise;
 
     serializeJson(json, *response);
+#ifdef CORS_HEADER
+    response->addHeader("Access-Control-Allow-Origin", "*");
+#endif
     request->send(response);
 }
 
@@ -527,6 +542,9 @@ void handleWifi(AsyncWebServerRequest *request) {
     json[PARAM_PASSWORD] = wifiSettings.password;
 
     serializeJson(json, *response);
+#ifdef CORS_HEADER
+    response->addHeader("Access-Control-Allow-Origin", "*");
+#endif
     request->send(response);
     if (request->params() == 3) {
         writeJsonFile(WIFI_SETTINGS_FILE, json);
@@ -574,6 +592,9 @@ void handleProtocol(AsyncWebServerRequest *request) {
     json[PARAM_WEBSOCKET_PORT] = protocolSettings.websocketPort;
 
     serializeJson(json, *response);
+#ifdef CORS_HEADER
+    response->addHeader("Access-Control-Allow-Origin", "*");
+#endif
     request->send(response);
     if (request->params() == 6) {
         writeJsonFile(PROTOCOL_SETTINGS_FILE, json);
@@ -621,6 +642,9 @@ void handleStation(AsyncWebServerRequest *request) {
     json["bowoffset"] = stationSettings.bowoffset;
 
     serializeJson(json, *response);
+#ifdef CORS_HEADER
+    response->addHeader("Access-Control-Allow-Origin", "*");
+#endif
     request->send(response);
 }
 
@@ -637,6 +661,9 @@ void handleSystem(AsyncWebServerRequest *request) {
     json["bootloader"] = systemSettings.bootloader;
 
     serializeJson(json, *response);
+#ifdef CORS_HEADER
+    response->addHeader("Access-Control-Allow-Origin", "*");
+#endif
     request->send(response);
     Serial2.print("sys?\r\n");
 }
@@ -709,15 +736,15 @@ void stopWebServer() {
 }
 
 static void handleData(void *arg, AsyncClient *client, void *data, size_t len) {
-    Serial.printf("\n data received from client %s :",
+    Serial.printf("Data received from TCP client %s :",
                   client->remoteIP().toString().c_str());
     char *d = (char *)data;
-    d[len] = 0;
-    //    Serial.print("TCP Received: ");
+    d[len] = 0;    
     Serial.println(d);
 
-    // TODO: forward this to serial2
-    //    Serial2.print(d);
+    // Forward to serial2 / Maiana
+    Serial2.println(d);
+
     // For debugging treat it as input from the serial port
     for (size_t i = 0; i < len; i++) {
         createAndHandleLine(d[i]);
@@ -1171,12 +1198,82 @@ bool readProtocolFromFile() {
     return false;
 }
 
+void sendHistoryWSChuncked(uint32_t client, long msgId) {
+#ifdef AISMEMORY
+    std::map<std::string, std::string> ais_messages = getAISMessages();
+    std::map<std::string, std::string>::iterator it;
+    Serial.printf("Send %u history to WebSocket client #%u. from # %u\n",
+                  ais_messages.size(), client, msgId);
+    long i = 0;
+
+    for (it = ais_messages.begin(); it != ais_messages.end(); it++) {
+        i++;
+        if (i < msgId) {
+            continue;
+        }
+        // if (debug_logging) {
+        Serial.print(it->first.c_str());
+        Serial.print(" : ");
+        Serial.println(it->second.c_str());
+        // }
+
+        if (ws.availableForWrite(client)) {
+            ws.text(client, it->second.c_str());
+        }
+        ws_queue_loop = millis(); //makes sure that the next run does not start prior finishing the earlier loop
+        if (i > msgId + WS_MAX_MESSAGES) {
+            ws_queue_msgId = i;
+            return;
+        }
+    }
+    ws_queue_msgId = -1;
+    ws_queue_client = 0;
+#endif
+}
+
+/* Does seem to get the websocket stuck. Remove
+void sendHistoryWS(AsyncWebSocketClient *client) {
+#ifdef AISMEMORY
+    std::map<std::string, std::string> ais_messages = getAISMessages();
+    std::map<std::string, std::string>::iterator it;
+    uint32_t id = client->id();
+    Serial.printf("Send %u history to WebSocket client #%u connected from %s\n",
+                  ais_messages.size(), client->id(),
+                  client->remoteIP().toString().c_str());
+
+    client->printf("Hello Client %u : You receive %u messages", client->id(),
+                   ais_messages.size());
+
+    for (it = ais_messages.begin(); it != ais_messages.end(); it++) {
+        // if (debug_logging) {
+        Serial.print(it->first.c_str());
+        Serial.print(" : ");
+        Serial.println(it->second.c_str());
+        // }
+
+        if (!client->queueIsFull() && client->canSend() &&
+            client->queueLen() < 100) {
+            // client->printf("%s\r\n", it->second.c_str());
+            //        websocketSend(it->second.c_str());
+            client->text(it->second.c_str());
+            Serial.printf("Sent  to WebSocket client queue #%u\n",
+                          client->queueLen());
+        } else {
+            Serial.println("Client queue is full");
+        }
+    }
+    client->ping();
+#endif
+}
+*/
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
              AwsEventType type, void *arg, uint8_t *data, size_t len) {
     switch (type) {
         case WS_EVT_CONNECT:
-            Serial.printf("WebSocket client #%u connected from %s\n",
-                          client->id(), client->remoteIP().toString().c_str());
+            // sendHistoryWS(client);
+            ws_queue_client = client->id();
+            ws_queue_msgId = 0;
+            ws_queue_loop = millis();
             break;
         case WS_EVT_DISCONNECT:
             Serial.printf("WebSocket client #%u disconnected\n", client->id());
@@ -1185,7 +1282,10 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
             // handleWebSocketMessage(arg, data, len);
             break;
         case WS_EVT_PONG:
+            Serial.printf("WebSocket client #%u pong\n", client->id());
+            break;
         case WS_EVT_ERROR:
+            Serial.printf("WebSocket client #%u event error:\n", client->id());
             break;
     }
 }
@@ -1224,12 +1324,9 @@ void setup() {
         startAPWiFi();
     }
     // TODO: remove test call
-     testParsing();
-        requestAISInfomation();
-
+    testParsing();
+    requestAISInfomation();
 }
-
-long timerloop = 0;
 
 void loop() {
     // general
@@ -1250,12 +1347,19 @@ void loop() {
 
 #ifdef AISMEMORY
     ais_store_cleanup_loop();
+    if (ws_queue_client > 0 && ws_queue_msgId >= 0 &&
+        long(millis) - ws_queue_loop > 500) {
+        ws_queue_loop = millis();
+        sendHistoryWSChuncked(ws_queue_client, ws_queue_msgId);
+    }
 #endif
 
 #ifdef FAKEAIS
-    if (fakeAISData && millis() - timerloop > 5000) {
+    if (fakeAISData && long(millis()) - timerloop > 1000) {
         timerloop = millis();
-        String line = getRandomAISLine();
+        Serial.print("Demo NMEA inputline: ");
+        String line = getDemoAISLine();
+        Serial.print(line);
         for (int i = 0; i < line.length(); i++) {
             createAndHandleLine(line[i]);
         }
