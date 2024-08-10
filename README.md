@@ -12,6 +12,12 @@ This is the latest version of the GUI
 
 ![](docu/img/ScreenshotMAIANA.png)
 
+
+with a config page to configure the Maiana and other settings
+
+![](docu/img/maiaMaianaConfig.png)
+
+
 with a detailed view for the GPS information
 
 ![](docu/img/gpsDashboard.png)

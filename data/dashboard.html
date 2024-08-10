@@ -36,7 +36,7 @@
                 <h1>Speedometer</h1>
         </div>
         <script>
-                var development_ip = "192.168.3.196"
+                var development_ip = ""
                 var gateway = development_ip == "" ? `ws://${window.location.hostname}/ws` : `ws://${development_ip}/ws`;
 
                 var websocket;
@@ -423,7 +423,7 @@
                                 .append("title")
                                 .text(function (d, i) {
                                         var v = d.snr || 0;
-                                        return 'system: ' + d.system + '\r\nazimuth: ' + d.azimuth + '\r\nelevation: ' + d.elevation + '\r\nsnr: ' + v;
+                                        return 'system: ' + d.system + '\rprn: ' + d.prn + '\r\nazimuth: ' + d.azimuth + '\r\nelevation: ' + d.elevation + '\r\nsnr: ' + v;
                                 });
 
                         text

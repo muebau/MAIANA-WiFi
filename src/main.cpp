@@ -680,10 +680,6 @@ void setupWebServer() {
     server.on("/config.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/config.html", "text/html");
     });
-
-    server.on("/ais.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/ais.html", "text/html");
-    });
     
     server.on("/dashboard.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/dashboard.html", "text/html");
@@ -1333,7 +1329,7 @@ void setup() {
         startAPWiFi();
     }
     // TODO: remove test call
-    testParsing();
+    // testParsing();
     requestAISInfomation();
 }
 
