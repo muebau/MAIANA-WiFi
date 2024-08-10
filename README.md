@@ -1,7 +1,10 @@
 # MAIANA-WiFi
 This project is an approach for an new adapter for the MAIANA AIS by peterantypas (https://github.com/peterantypas/maiana).
 
-The idea is to be able to operate the AIS only with a mobile. Many people use their mobile to navigate and would love to have a integration of the AIS signals into their preffered app.
+The idea is to be able to operate the AIS only with a mobile. Many people use their mobile to navigate and would love to have a integration of the AIS signals into their prefered app.
+
+Upon making connection the ESP will send the most recent AIS messages from all ships seen in the last 10 minutes.
+This way your app will be updates fast with the surrounding ships.
 
 We use a ESP32 and the "USB-only" adapter by peterantypas. All messages between the serial output and the AIS will be forwarded unchanged, the ESP just listens in the middle and will add some extra messages. The adapter is expanded through a additional button "config mode". If this button is pressed, the ESP enters the configuration mode, in which he provides a unencrypted WiFi. In this WiFi the user can configure the AIS and WiFi settings. The ESP can either connect to a existing WiFi or create its own. After 5 minutes the ESP closes the connection to the configuration page and switch to normal operation mode. In the "normal" mode the ESP provides each message of the AIS over WiFi as NMEA 0183, which can be used with many apps. 
 
