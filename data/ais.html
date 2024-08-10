@@ -27,6 +27,16 @@
             <a href="config.html">Config </a>
         </div>
     </div>
+    <div class="infobox" id="infobox">
+        <div id="infotext">
+        </div>
+        <details>
+            <summary>more info</summary>
+            <div id="infodetails">
+            </div>
+        </details>
+        <button type="button" id="toggle-tx">Toggle TX</button>
+    </div>
 
     <div class="aisbox" id="infobox">
         <div id="aisbox">
@@ -148,7 +158,7 @@
         ];
 
         var development_ip = ""
-        var gateway = development_ip == "" ?  `ws://${window.location.hostname}/ws` : `ws://${development_ip}/ws`;
+        var gateway = development_ip == "" ? `ws://${window.location.hostname}/ws` : `ws://${development_ip}/ws`;
 
         var max_age = 600; //after 10 minutes the ship will be removed from the list
 
@@ -373,6 +383,13 @@
             });
         }
 
+        function get(url, params) {
+            url += '?' + new URLSearchParams(params).toString();
+            url = development_ip == "" ? url : `http://${development_ip}${url}`
+            return fetch(url).then(data => data.json());
+        }
+
+        //TODO: parse this from the ws instead of from get
         function refresh_info() {
             Promise.all([
                 get("/info"),
@@ -387,64 +404,11 @@
                     let lastChA = dateFromDigits(txState.channelALastTime, txState.channelALastDate);
                     let lastChB = dateFromDigits(txState.channelBLastTime, txState.channelBLastDate);
 
-                    box = document.getElementById('infotext');
-                    box.innerHTML = "";
+                    box_detail = document.getElementById('infodetails');
+                    box_detail.innerHTML = "";
 
                     let table = document.createElement("table");
                     addTableRows(table, [
-                        //IP
-                        [
-                            "Network status",
-                            infoState.networkstatus
-                        ],
-                        //IP
-                        [
-                            "IP",
-                            infoState.ip
-                        ],
-                        //signal
-                        [
-                            "Signal Strength",
-                            infoState.signal + " dBm"
-                        ],
-                        //Config Timeout (sec)
-                        [
-                            "Config Timeout (sec)",
-                            infoState.configTimeout
-                        ],
-                    ]);
-                    box.appendChild(table);
-
-                    boxdetails = document.getElementById('infodetails');
-                    boxdetails.innerHTML = "";
-
-                    table = document.createElement("table");
-                    addTableRows(table, [
-                        //Hardware Present
-                        [
-                            "Hardware Present",
-                            txState.hardwarePresent == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Hardware Switch
-                        [
-                            "Hardware TX Switch",
-                            txState.hardwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Software TX Switch
-                        [
-                            "Software TX Switch",
-                            txState.softwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Station data provided
-                        [
-                            "Station data provided",
-                            txState.stationData == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //TX status
-                        [
-                            "TX status",
-                            txState.status == "1" ? "\u{2705} (transmitting)" : "\u{26D4}\u{FE0F} (not transmitting)"
-                        ],
                         //GPS time (local)
                         [
                             "GPS time (local)",
@@ -552,86 +516,82 @@
                                 },
                                 " (" + parseInt(txState.channelBNoise, 16) + ")"
                             ]
+                        ],
+                        // empty space
+                        ["", ""],
+                        //IP
+                        [
+                            "Network status",
+                            infoState.mode
+                        ],
+                        //IP
+                        [
+                            "IP",
+                            infoState.ip
+                        ],
+                        //signal
+                        [
+                            "Signal Strength",
+                            infoState.signal + " dBm"
+                        ],
+                        //wifi reconnects
+                        [
+                            "Wifi reconnects",
+                            infoState.wifiReconnects
+                        ],
+                        //Config Timeout (sec)
+                        [
+                            "Config Timeout (sec)",
+                            infoState.configTimeout
+                        ],
+                    ]);
+                    box_detail.appendChild(table);
 
+
+                    box_main = document.getElementById('infotext');
+                    box_main.innerHTML = "";
+
+                    table = document.createElement("table");
+                    addTableRows(table, [
+                        //Hardware Present
+                        [
+                            "Hardware Present",
+                            txState.hardwarePresent == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
+                        ],
+                        //Hardware Switch
+                        [
+                            "Hardware TX Switch",
+                            txState.hardwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
+                        ],
+                        //Software TX Switch
+                        [
+                            "Software TX Switch",
+                            txState.softwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
+                        ],
+                        //Station data provided
+                        [
+                            "Station data provided",
+                            txState.stationData == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
+                        ],
+                        //TX status
+                        [
+                            "TX status",
+                            txState.status == "1" ? "\u{2705} (transmitting)" : "\u{26D4}\u{FE0F} (not transmitting)"
                         ]
                     ]);
-                    boxdetails.appendChild(table);
+                    box_main.appendChild(table);
                 });
         }
-
-        function refresh_wifi() {
-            get("/wifi").then(data => {
-                document.getElementById('wifi-' + data.type).checked = true;
-                document.getElementById('wifi-ssid').value = data.ssid;
-                document.getElementById('wifi-password').value = data.password;
-            });
-        }
-
-        function refresh_protocol() {
-            get("/protocol").then(data => {
-                document.getElementById('tcp-enabled').checked = data.tcp;
-                document.getElementById('tcp-port').value = data.tcpport;
-                document.getElementById('udp-enabled').checked = data.udp;
-                document.getElementById('udp-port').value = data.udpport;
-                document.getElementById('websocket-enabled').checked = data.websocket;
-                document.getElementById('websocket-port').value = data.websocketport;
-            }).then(() => {
-                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.dispatchEvent(new Event('change'));
-                });
-            });
-        }
-
-        function refresh_station() {
-            get("/station").then(data => {
-                document.getElementById('station-mmsi').value = data.mmsi;
-                document.getElementById('station-callsign').value = data.callsign;
-                document.getElementById('station-vesselname').value = data.vesselname;
-                document.getElementById('station-vesseltype').value = data.vesseltype;
-                document.getElementById('station-loa').value = data.loa;
-                document.getElementById('station-beam').value = data.beam;
-                document.getElementById('station-portoffset').value = data.portoffset;
-                document.getElementById('station-bowoffset').value = data.bowoffset;
-            });
-        }
-
-        function refresh_all() {
-            refresh_info();
-            refresh_wifi();
-            refresh_protocol();
-            refresh_station();
-        };
-
-        document.getElementById('refresh').onclick = function () {
-            refresh_all();
-        };
 
         document.getElementById('toggle-tx').onclick = function () {
             get("/txstate", { "softtxtoggle": 1 }).then(data => {
             });
         };
 
-        document.getElementById('wifi-scan').onclick = function () {
-            get("/scan").then(data => {
+        setInterval(() => {
+            refresh_info();
+        }, 30000);
 
-                let t = buildElement(
-                    {
-                        type: "table",
-                        childs: ["SSID \u{1F4E1}", "channel \u{1F522}", "RSSI \u{1F4F6}", "encryption \u{1F512}"].map(e => buildElement({ "type": "th", "childs": e }))
-                    }
-                );
-
-                addTableRows(t,
-                    data.map(
-                        net => [net.ssid, net.channel, net.rssi, net.secure > 0 ? "\u{1F512}" : "open"].map(
-                            e => buildElement({ "type": "div", "attr": [["onclick", "document.getElementById(\"wifi-ssid\").value = '" + net.ssid + "'"]], "childs": e })
-                        )
-                    )
-                );
-                document.getElementById('networks').innerHTML = "";
-                document.getElementById('networks').appendChild(t);
-            });
-        };
         setInterval(() => {
             create_ais_table();
         }, 5000);
@@ -642,18 +602,10 @@
                 checkbox.addEventListener('change', function () {
                     const portInput = this.closest('div').querySelector('.port-input');
                     if (this.checked) {
-                        // portInput.classList.remove('disabled-input');
-                        // portInput.removeAttribute('disabled');
                         portInput.style.background = '#303245';
-                        //portInput.style.background = 'rgb(150 150 150)';
-
 
                     } else {
-                        // portInput.classList.add('disabled-input');
-                        // portInput.setAttribute('disabled', 'disabled');
                         portInput.style.background = 'rgb(150 150 150)';
-                        //   portInput.style.background = '#303245';
-
                     }
                 });
             });
@@ -662,7 +614,7 @@
             portCheckboxes.forEach(checkbox => {
                 checkbox.dispatchEvent(new Event('change'));
             });
-            refresh_all();
+            refresh_info();
         });
 
     </script>
