@@ -21,3 +21,11 @@ with a config page to configure the Maiana and other settings
 with a detailed view for the GPS information
 
 ![](docu/img/gpsDashboard.png)
+
+## OTA Firmware Update
+Firmware can be update over-the-air OTA by going to the http://[your device ip]/update page and select the file to upload (firmware or SPIFF file system with webpages).
+Note that when the SPIFF / webpages are updated configuration details like port setup and wifi details will be overwritten. (not the Maiana settings!)
+
+## Included JS projects
+* GPS parsing https://github.com/infusion/GPS.js
+* AIS parsing https://github.com/mjaros/ais-decoder 
