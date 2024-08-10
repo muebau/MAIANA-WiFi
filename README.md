@@ -15,7 +15,7 @@ This is the latest version of the GUI
 
 with a config page to configure the Maiana and other settings
 
-![](docu/img/maiaMaianaConfig.png)
+![](docu/img/MaianaConfig.png)
 
 
 with a detailed view for the GPS information
