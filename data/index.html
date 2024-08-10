@@ -45,10 +45,27 @@
     <details open>
         <summary>NMEA0183 Messages</summary>
         <div class="nmea0183box">
-            <fieldset>
-                <legend>NMEA0183</legend>
-                <div class="input" id="messages">.</div>
-            </fieldset>
+            <div style="display: flex; padding-bottom: 10px;"">
+                <div class=" nmeaselect" id="gps" name="gps">
+                <input type="checkbox" id="nmea-gps" name="nmea-gps" checked>
+                <label for="nmea-gps"></label>
+                GPS
+            </div>
+            <div class="nmeaselect" id="ais" name="ais">
+                <input type="checkbox" id="nmea-ais" name="nmea-ais" checked>
+                <label for="nmea-ais"></label>
+                AIS
+            </div>
+            <div class="nmeaselect" id="pai" name="pai">
+                <input type="checkbox" id="nmea-pai" name="nmea-pai" checked>
+                <label for="nmea-pai"></label>
+                Device
+            </div>
+        </div>
+        <fieldset>
+            <legend>NMEA0183</legend>
+            <div class="input" id="messages">Enable Websockets to see feed of NMEA0183 messages</div>
+        </fieldset>
         </div>
     </details>
 
@@ -165,6 +182,8 @@
         var websocket;
         var aisdecoder;
         var nmeas0183Lines = [];
+        var nmeavalues = {};
+
 
         var state = { "lat": 0, "lon": 0 };
         var gps = new GPS;
@@ -219,15 +238,21 @@
             setTimeout(initWebSocket, 2000);
         }
         function onMessage(event) {
+            // Show max 1000 lines of log
+            var nmeadata = event.data;
+            if ((nmeadata.startsWith('$G') && nmeavalues['gps'] == true) ||
+                (nmeadata.startsWith('$P') && nmeavalues['pai'] == true) ||
+                (nmeadata.startsWith('!') && nmeavalues['ais'] == true)) {
 
-            // Show only 500 lines of log
-            nmeas0183Lines.push(event.data);
-            if (nmeas0183Lines.length > 500) {
-                nmeas0183Lines.shift();
+                nmeas0183Lines.push(event.data);
+                if (nmeas0183Lines.length > 1000) {
+                    nmeas0183Lines.shift();
+                }
             }
             var textarea = document.getElementById('messages');
             textarea.innerHTML = nmeas0183Lines.join('<br>');
             textarea.scrollTop = textarea.scrollHeight;
+
             let nmeaSentence = event.data.trim();
             if (nmeaSentence.startsWith("!A")) {
                 aisdecoder.write(nmeaSentence);
@@ -235,9 +260,7 @@
             if (nmeaSentence.startsWith("$GNRMC")) {
                 gps.update(nmeaSentence);
             }
-
         }
-
 
         aisKeys = { "name": "Name", "mmsi": "MMSI", "callsign": "Callsign", "lon": "Lon", "lat": "Lat", "speedOverGround": "Speed", "courseOverGround": "Course", "typeAndCargo": "Ship Type", "lastUpdate": "", "distance": "Distance", "age": "Age" };
         ships = {};
@@ -599,15 +622,22 @@
         document.addEventListener("DOMContentLoaded", function () {
             const portCheckboxes = document.querySelectorAll('input[type="checkbox"]');
             portCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function () {
-                    const portInput = this.closest('div').querySelector('.port-input');
-                    if (this.checked) {
-                        portInput.style.background = '#303245';
+                if (checkbox.id.endsWith("-enabled")) {
+                    checkbox.addEventListener('change', function () {
+                        const portInput = this.closest('div').querySelector('.port-input');
+                        if (this.checked) {
+                            portInput.style.background = '#303245';
 
-                    } else {
-                        portInput.style.background = 'rgb(150 150 150)';
-                    }
-                });
+                        } else {
+                            portInput.style.background = 'rgb(150 150 150)';
+                        }
+                    });
+                } else {
+                    checkbox.addEventListener('change', function () {
+                        console.log(this.id.slice(5, 8), this.checked)
+                        nmeavalues[this.id.slice(5, 8)] = this.checked;
+                    });
+                }
             });
 
             // Initialize the state based on the checkbox
