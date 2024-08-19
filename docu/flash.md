@@ -1,6 +1,6 @@
 ---
 title: Web Flasher
-description: Web Installer for Maiana Firmware
+description: Web Installer for MAIANA Firmware
 ---
 
 <style>
@@ -32,7 +32,7 @@ Flash or Find your device using next options:
 1. Plug in your ESP32 to a USB port.
 2. Hit "Install" and select the correct COM port.
 3. Get firmware installed and connected in less than 3 minutes!
-4. Connect to the Maiana wifi and configure the wifi network to connect your device to.
+4. Connect to the MAIANA wifi and configure the wifi network to connect your device to.
 
 <p class="button-row" align="center">
 <esp-web-install-button manifest="./manifest.json">

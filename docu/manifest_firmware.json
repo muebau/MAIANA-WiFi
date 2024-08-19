@@ -1,7 +1,6 @@
 {
-    "name": "Maiana",
-    "version": "2024.07.0",
-    "home_assistant_domain": "esphome",
+    "name": "MAIANA-Wifi",
+    "version": "0.1.0",
     "funding_url": "https://github.com/marcelrv",
     "builds": [
         {

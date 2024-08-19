@@ -4,8 +4,8 @@
 #ifdef AISMEMORY
 
 #include <Arduino.h>
-#include <map>
 
+#include <map>
 
 void storeAIS(const char* line);
 

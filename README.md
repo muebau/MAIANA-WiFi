@@ -10,6 +10,14 @@ We use a ESP32 and the "USB-only" adapter by peterantypas. All messages between 
 
 This way this adapter mades the AIS a stand alone system if wanted and the user just have to plug it in and it works. If the adapter also gets a step up converter, it could be powered over USB, which makes it even more simple to use. Just grab a USB cable and a USB car plug and it works out of the box. As the configuration is made in the browser, this approach is usable with all devices, smartphones, tablets or a laptop, independent of the brand. 
 
+## Configure wifi settings
+
+There are multiple ways to configure the wifi
+1) Via the webpage. Enable the config mode, this will set the MAIANA-Wifi in Access point mode and you can connect to if.
+Then browse to the config page wifi settings
+2) Via the serial port. Send a line with details as json: `{"ssid":"myboatsNetwork", "password":"sailingTime"}` 
+
+
 ## How it looks
 This is the latest version of the GUI
 

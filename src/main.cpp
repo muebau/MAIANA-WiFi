@@ -22,7 +22,6 @@
 
 #ifdef FAKEAIS  // Adds demo messages. TODO: enable/disable via config menu
 #include "fakedata.h"
-bool fakeAISData = true;
 long timerloop = millis() + 10000L;
 #endif
 
@@ -107,6 +106,12 @@ struct txState {
     String channelBNoise;
 } txState;
 
+struct appSettings {
+    bool demoMode;
+    bool corsHeader;
+    bool aisMemory;
+} appSettings;
+
 // switch
 #define SWITCH 4
 
@@ -121,8 +126,8 @@ unsigned long blinkMillis = 0;
 bool blinkState = false;
 bool mDNSOK = false;
 bool networkOK = false;
-bool udpForwaredOK = false;
-bool tcpForwaredOK = false;
+bool udpForwardOK = false;
+bool tcpForwardOK = false;
 bool websocketOk = false;
 
 static std::vector<AsyncClient *> clients;
@@ -132,6 +137,7 @@ static std::vector<AsyncClient *> clients;
 #define CONFIG_PASS "MAIANA-AIS"
 #define WIFI_SETTINGS_FILE "/wifi.json"
 #define PROTOCOL_SETTINGS_FILE "/protocol.json"
+#define APP_SETTINGS_FILE "/app.json"
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -171,6 +177,12 @@ const char *PARAM_BEAM = "beam";
 const char *PARAM_PORTOFFSET = "portoffset";
 const char *PARAM_BOWOFFSET = "bowoffset";
 const char *PARAM_TOGGLE = "softtxtoggle";
+
+const char *PARAM_VERSION = "version";
+const char *PARAM_BUILD = "build";
+const char *PARAM_DEMOMODE = "demoMode";
+const char *PARAM_CORS = "corsHeader";
+const char *PARAM_AISMEM = "aisMemory";
 
 //---------------functions-----------------------------
 
@@ -455,7 +467,9 @@ void handleInfo(AsyncWebServerRequest *request) {
 
     serializeJson(json, *response);
 #ifdef CORS_HEADER
-    response->addHeader("Access-Control-Allow-Origin", "*");
+    if (appSettings.corsHeader) {
+        response->addHeader("Access-Control-Allow-Origin", "*");
+    }
 #endif
     request->send(response);
 }
@@ -490,7 +504,9 @@ void handleTXstate(AsyncWebServerRequest *request) {
 
     serializeJson(json, *response);
 #ifdef CORS_HEADER
-    response->addHeader("Access-Control-Allow-Origin", "*");
+    if (appSettings.corsHeader) {
+        response->addHeader("Access-Control-Allow-Origin", "*");
+    }
 #endif
     request->send(response);
 }
@@ -543,11 +559,59 @@ void handleWifi(AsyncWebServerRequest *request) {
 
     serializeJson(json, *response);
 #ifdef CORS_HEADER
-    response->addHeader("Access-Control-Allow-Origin", "*");
+    if (appSettings.corsHeader) {
+        response->addHeader("Access-Control-Allow-Origin", "*");
+    }
 #endif
     request->send(response);
     if (request->params() == 3) {
         writeJsonFile(WIFI_SETTINGS_FILE, json);
+    }
+}
+
+void handleApp(AsyncWebServerRequest *request) {
+    if (request->hasParam(PARAM_DEMOMODE)) {
+        appSettings.demoMode =
+            request->getParam(PARAM_DEMOMODE)->value().equals("true");
+    }
+    if (request->hasParam(PARAM_CORS)) {
+        appSettings.corsHeader =
+            request->getParam(PARAM_CORS)->value().equals("true");
+    }
+    if (request->hasParam(PARAM_AISMEM)) {
+        appSettings.aisMemory =
+            request->getParam(PARAM_AISMEM)->value().equals("true");
+    }
+    AsyncResponseStream *response =
+        request->beginResponseStream("application/json");
+    DynamicJsonDocument json(1024);
+
+    json[PARAM_VERSION] = FIRMWARE_VERSION;
+    json[PARAM_BUILD] = FIRMWARE_BUILD;
+#ifdef FAKEAIS
+    json[PARAM_DEMOMODE] = appSettings.demoMode;
+#else
+    json[PARAM_DEMOMODE] = false;
+#endif
+#ifdef CORS_HEADER
+    json[PARAM_CORS] = appSettings.corsHeader;
+#else
+    json[PARAM_CORS] = false;
+#endif
+#ifdef AISMEMORY
+    json[PARAM_AISMEM] = appSettings.aisMemory;
+#else
+    json[PARAM_AISMEM] = false;
+#endif
+    serializeJson(json, *response);
+#ifdef CORS_HEADER
+    if (appSettings.corsHeader) {
+        response->addHeader("Access-Control-Allow-Origin", "*");
+    }
+#endif
+    request->send(response);
+    if (request->params() == 2) {
+        writeJsonFile(APP_SETTINGS_FILE, json);
     }
 }
 
@@ -593,13 +657,16 @@ void handleProtocol(AsyncWebServerRequest *request) {
 
     serializeJson(json, *response);
 #ifdef CORS_HEADER
-    response->addHeader("Access-Control-Allow-Origin", "*");
+    if (appSettings.corsHeader) {
+        response->addHeader("Access-Control-Allow-Origin", "*");
+    }
 #endif
     request->send(response);
     if (request->params() == 6) {
         writeJsonFile(PROTOCOL_SETTINGS_FILE, json);
     }
 }
+
 void handleStation(AsyncWebServerRequest *request) {
     if (request->hasParam(PARAM_MMSI) && request->hasParam(PARAM_CALLSIGN) &&
         request->hasParam(PARAM_VESSELNAME) &&
@@ -643,7 +710,9 @@ void handleStation(AsyncWebServerRequest *request) {
 
     serializeJson(json, *response);
 #ifdef CORS_HEADER
-    response->addHeader("Access-Control-Allow-Origin", "*");
+    if (appSettings.corsHeader) {
+        response->addHeader("Access-Control-Allow-Origin", "*");
+    }
 #endif
     request->send(response);
 }
@@ -662,7 +731,9 @@ void handleSystem(AsyncWebServerRequest *request) {
 
     serializeJson(json, *response);
 #ifdef CORS_HEADER
-    response->addHeader("Access-Control-Allow-Origin", "*");
+    if (appSettings.corsHeader) {
+        response->addHeader("Access-Control-Allow-Origin", "*");
+    }
 #endif
     request->send(response);
     Serial2.print("sys?\r\n");
@@ -680,7 +751,7 @@ void setupWebServer() {
     server.on("/config.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/config.html", "text/html");
     });
-    
+
     server.on("/dashboard.html", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/dashboard.html", "text/html");
     });
@@ -714,6 +785,10 @@ void setupWebServer() {
     // GET request /system
     server.on("/system", HTTP_GET,
               [](AsyncWebServerRequest *request) { handleSystem(request); });
+
+    // GET request /app
+    server.on("/app", HTTP_GET,
+              [](AsyncWebServerRequest *request) { handleApp(request); });
 
     server.onNotFound(notFound);
 }
@@ -782,12 +857,12 @@ void startTCPNMEAForward(uint16_t port) {
         tcp.reset(new AsyncServer(protocolSettings.tcpPort));
         tcp.get()->onClient(&handleNewClient, tcp.get());
         tcp.get()->begin();
-        tcpForwaredOK = true;
+        tcpForwardOK = true;
     }
 }
 
 void stopTCPNMEAForward() {
-    tcpForwaredOK = false;
+    tcpForwardOK = false;
     tcp.get()->end();
     tcp.release();
 }
@@ -804,7 +879,7 @@ void startNMEAForward() {
     }
 
     if (protocolSettings.udp) {
-        udpForwaredOK = true;
+        udpForwardOK = true;
         if (mDNSOK) {
             MDNS.addService("nmea-0183", "udp", protocolSettings.udpPort);
         }
@@ -819,7 +894,7 @@ void startNMEAForward() {
 }
 
 void stopNMEAForward() {
-    udpForwaredOK = false;
+    udpForwardOK = false;
 
     stopTCPNMEAForward();
     if (mDNSOK) {
@@ -1105,7 +1180,7 @@ void websocketSend(const char *line) {
 void forwardIt(const char *line) {
     // if (networkOK && protocolSettings.port > 0 &&
     //    protocolSettings.port < 65536) {
-    if (tcpForwaredOK) {
+    if (tcpForwardOK) {
         String lineStr = String(line);
         std::for_each(clients.begin(), clients.end(), [&](AsyncClient *n) {
             if (n->space() > lineStr.length() && n->canSend()) {
@@ -1115,7 +1190,7 @@ void forwardIt(const char *line) {
         });
     }
 
-    if (udpForwaredOK) {
+    if (udpForwardOK) {
         udp.broadcastTo(line, protocolSettings.udpPort);
         if (debug_logging) {
             Serial.print("UDP send: ");
@@ -1147,6 +1222,35 @@ int validPort(int port, int defaultPort) {
         Serial.println(defaultPort);
         return defaultPort;
     };
+}
+
+bool readAppSettingsFromFile() {
+    appSettings.demoMode = false;
+    appSettings.corsHeader = false;
+    appSettings.aisMemory = true;
+    StaticJsonDocument<512> doc;
+    if (!loadJsonFile(APP_SETTINGS_FILE, doc)) {
+        Serial.println("Failed to load App settings. Using defaults");
+        return false;
+    }
+    Serial.print("Protocol settings loaded from ");
+    Serial.println(APP_SETTINGS_FILE);
+    if (doc.containsKey(PARAM_DEMOMODE)) {
+        appSettings.demoMode = doc[PARAM_DEMOMODE].as<bool>();
+    } else {
+        Serial.println("demoMode not found. using default value");
+    }
+    if (doc.containsKey(PARAM_CORS)) {
+        appSettings.corsHeader = doc[PARAM_CORS].as<bool>();
+    } else {
+        Serial.println("corsHeader not found. using default value");
+    }
+    if (doc.containsKey(PARAM_AISMEM)) {
+        appSettings.aisMemory = doc[PARAM_AISMEM].as<bool>();
+    } else {
+        Serial.println("aisMemory not found. using default value");
+    }
+    return true;
 }
 
 bool readProtocolFromFile() {
@@ -1235,42 +1339,6 @@ void sendHistoryWSChuncked(uint32_t client, long msgId) {
     ws_queue_client = 0;
 #endif
 }
-
-/* Does seem to get the websocket stuck. Remove
-void sendHistoryWS(AsyncWebSocketClient *client) {
-#ifdef AISMEMORY
-    std::map<std::string, std::string> ais_messages = getAISMessages();
-    std::map<std::string, std::string>::iterator it;
-    uint32_t id = client->id();
-    Serial.printf("Send %u history to WebSocket client #%u connected from %s\n",
-                  ais_messages.size(), client->id(),
-                  client->remoteIP().toString().c_str());
-
-    client->printf("Hello Client %u : You receive %u messages", client->id(),
-                   ais_messages.size());
-
-    for (it = ais_messages.begin(); it != ais_messages.end(); it++) {
-        // if (debug_logging) {
-        Serial.print(it->first.c_str());
-        Serial.print(" : ");
-        Serial.println(it->second.c_str());
-        // }
-
-        if (!client->queueIsFull() && client->canSend() &&
-            client->queueLen() < 100) {
-            // client->printf("%s\r\n", it->second.c_str());
-            //        websocketSend(it->second.c_str());
-            client->text(it->second.c_str());
-            Serial.printf("Sent  to WebSocket client queue #%u\n",
-                          client->queueLen());
-        } else {
-            Serial.println("Client queue is full");
-        }
-    }
-    client->ping();
-#endif
-}
-*/
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
              AwsEventType type, void *arg, uint8_t *data, size_t len) {
     switch (type) {
@@ -1321,6 +1389,7 @@ void setup() {
     bool wifidetails = loadWifiSettings();
     infoState.mode = "";
     readProtocolFromFile();
+    readAppSettingsFromFile();
     if (wifidetails && wifiSettings.type.equals("sta")) {
         setupClientWiFi();
         startClientWiFi();
@@ -1352,15 +1421,17 @@ void loop() {
 
 #ifdef AISMEMORY
     ais_store_cleanup_loop();
-    if (ws_queue_client > 0 && ws_queue_msgId >= 0 &&
-        long(millis) - ws_queue_loop > 500) {
-        ws_queue_loop = millis();
-        sendHistoryWSChuncked(ws_queue_client, ws_queue_msgId);
+    if (appSettings.aisMemory) {
+        if (ws_queue_client > 0 && ws_queue_msgId >= 0 &&
+            long(millis) - ws_queue_loop > 500) {
+            ws_queue_loop = millis();
+            sendHistoryWSChuncked(ws_queue_client, ws_queue_msgId);
+        }
     }
 #endif
 
 #ifdef FAKEAIS
-    if (fakeAISData && long(millis()) - timerloop > 1000) {
+    if (appSettings.demoMode && long(millis()) - timerloop > 1000) {
         timerloop = millis();
         Serial.print("Demo NMEA inputline: ");
         String line = getDemoAISLine();

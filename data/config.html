@@ -154,53 +154,46 @@
             </fieldset>
         </form>
     </div>
+    <div>
+        <form width="">
+            <fieldset>
+                <legend>App settings</legend>
+                <label for="app-version">Version</label>
+                <input type="text" id="app-version" name="app-version" value="" disabled>
+
+                <label for="app-build">Build</label>
+                <input type="text" id="app-build" name="app-build" value="" style="margin-bottom: 10px;" disabled>
+                <div style="margin-bottom: 20px;">Update Firmware <a href="/update">page</a></div>
+
+                <label for="app-demoMode" title="Simulates NMEA0183 messages from MAIANA">Demo Mode</label>
+                <div class="netselect" id="app-demoMode" name="app-demoMode"
+                    title="Simulates NMEA0183 messages from MAIANA">
+                    <input type="checkbox" id="app-demoMode-enabled" name="app-demoMode-enabled">
+                    <label for="app-demoMode-enabled" style="margin-bottom: 20px;"></label>
+                </div>
+                <label for="app-corsHeader" title="Sets the Access-Control-Allow-Origin header">CORS headers</label>
+                <div class="netselect" id="app-corsHeader" name="app-corsHeader"
+                    title="Sets the Access-Control-Allow-Origin header">
+                    <input type="checkbox" id="app-corsHeader-enabled" name="app-corsHeader-enabled">
+                    <label for="app-corsHeader-enabled" style="margin-bottom: 20px;"></label>
+                </div>
+                <label for="app-aisMemory"
+                    title="Upon TCP & websocket connect resend last AIS messages for each ship">AIS memory</label>
+                <div class="netselect" id="app-aisMemory" name="app-aisMemory"
+                    title="Upon TCP & websocket connect resend last AIS messages for each ship">
+                    <input type="checkbox" id="app-aisMemory-enabled" name="app-aisMemory-enabled">
+                    <label for="app-aisMemory-enabled" style="margin-bottom: 20px;"></label>
+                </div>
+                <button type="button" id="app-set">SET</button>
+            </fieldset>
+        </form>
+
+    </div>
+
     <script>
 
         var development_ip = ""
         var gateway = development_ip == "" ? `ws://${window.location.hostname}/ws` : `ws://${development_ip}/ws`;
-
-        var websocket;
-        var nmeas0183Lines = [];
-        var nmeavalues = {};
-
-        function initWebSocket() {
-            console.log('Trying to open a WebSocket connection...');
-            websocket = new WebSocket(gateway);
-            websocket.onopen = onOpen;
-            websocket.onclose = onClose;
-            websocket.onmessage = onMessage; // <-- add this line
-        }
-        function onOpen(event) {
-            console.log('Connection opened');
-        }
-
-        function onClose(event) {
-            console.log('Connection closed');
-            setTimeout(initWebSocket, 2000);
-        }
-
-        function onMessage(event) {
-            // Show max 1000 lines of log
-            var nmeadata = event.data;
-            if ((nmeadata.startsWith('$G') && nmeavalues['gps'] == true) ||
-                (nmeadata.startsWith('$P') && nmeavalues['pai'] == true) ||
-                (nmeadata.startsWith('!') && nmeavalues['ais'] == true)) {
-                nmeas0183Lines.push(event.data);
-
-                if (nmeas0183Lines.length > 1000) {
-                    nmeas0183Lines.shift();
-                }
-                var textarea = document.getElementById('messages');
-                textarea.innerHTML = nmeas0183Lines.join('<br>');
-                textarea.scrollTop = textarea.scrollHeight;
-            }
-        }
-
-        window.addEventListener('load', onLoad);
-        function onLoad(event) {
-            initWebSocket();
-
-        }
 
         function setFigureData(loa, beam, poffset, boffset) {
             let fig = document.getElementById("shipFigure");
@@ -352,11 +345,30 @@
             });
         }
 
+        function refresh_app() {
+            get("/app").then(data => {
+                document.getElementById('app-demoMode-enabled').checked = data.demoMode;
+                document.getElementById('app-corsHeader-enabled').checked = data.corsHeader;
+                document.getElementById('app-aisMemory-enabled').checked = data.aisMemory;
+                document.getElementById('app-version').value = data.version;
+                document.getElementById('app-build').value = data.build;
+            });
+        }
+
+        document.getElementById('app-set').onclick = function () {
+            let demoMode = document.getElementById("app-demoMode-enabled").checked;
+            let corsHeader = document.getElementById("app-corsHeader-enabled").checked;
+            let aisMemory = document.getElementById("app-aisMemory-enabled").checked;
+            get("/app", { "demoMode": demoMode, "corsHeader": corsHeader, "aisMemory": aisMemory }).then(data => {
+            });
+        };
+
         function refresh_all() {
             refresh_info();
             refresh_wifi();
             refresh_protocol();
             refresh_station();
+            refresh_app();
         };
 
         document.getElementById('refresh').onclick = function () {
@@ -393,14 +405,16 @@
             portCheckboxes.forEach(checkbox => {
 
                 if (checkbox.id.endsWith("-enabled")) {
-                    checkbox.addEventListener('change', function () {
-                        const portInput = this.closest('div').querySelector('.port-input');
-                        if (this.checked) {
-                            portInput.style.background = '#303245';
-                        } else {
-                            portInput.style.background = 'rgb(150 150 150)';
-                        }
-                    });
+                    if (!checkbox.id.startsWith("app-")) {
+                        checkbox.addEventListener('change', function () {
+                            const portInput = this.closest('div').querySelector('.port-input');
+                            if (this.checked) {
+                                portInput.style.background = '#303245';
+                            } else {
+                                portInput.style.background = 'rgb(150 150 150)';
+                            }
+                        });
+                    }
                 } else {
                     checkbox.addEventListener('change', function () {
                         console.log(this.id.slice(5, 8), this.checked)
