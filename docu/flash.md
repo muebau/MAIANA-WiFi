@@ -35,7 +35,7 @@ Flash or Find your device using next options:
 4. Connect to the MAIANA wifi and configure the wifi network to connect your device to.
 
 <p class="button-row" align="center">
-<esp-web-install-button manifest="./manifest.json">
+<esp-web-install-button manifest="./manifest.json?raw=true">
   <button slot="activate" class="md-button md-button--primary">INSTALL</button>
   <span slot="unsupported">Use Chrome Desktop</span>
   <span slot="not-allowed">Not allowed to use this on HTTP!</span>
