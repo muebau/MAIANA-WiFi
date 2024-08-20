@@ -18,8 +18,6 @@
 
 #include "helperfunctions.h"
 
-#define CORS_HEADER  // For webdevelopment purpose. Adds CORS header
-
 #ifdef FAKEAIS  // Adds demo messages. TODO: enable/disable via config menu
 #include "fakedata.h"
 long timerloop = millis() + 10000L;
@@ -195,6 +193,7 @@ void txToStruct(String input);
 void noiseFloorToStruct(String input);
 void checkLine(String line);
 void testParsing();
+void addOptionalCORSHeader(AsyncResponseStream *response);
 void handleInfo(AsyncWebServerRequest *request);
 void handleTXstate(AsyncWebServerRequest *request);
 void handleScan(AsyncWebServerRequest *request);
@@ -451,6 +450,14 @@ void testParsing() {
     Serial.println(txState.channelBNoise);
 }
 
+void addOptionalCORSHeader(AsyncResponseStream *response) {
+#ifdef CORS_HEADER
+    if (appSettings.corsHeader) {
+        response->addHeader("Access-Control-Allow-Origin", "*");
+    }
+#endif
+}
+
 // webserver
 void handleInfo(AsyncWebServerRequest *request) {
     AsyncResponseStream *response =
@@ -466,11 +473,7 @@ void handleInfo(AsyncWebServerRequest *request) {
     json["mode"] = infoState.mode;
 
     serializeJson(json, *response);
-#ifdef CORS_HEADER
-    if (appSettings.corsHeader) {
-        response->addHeader("Access-Control-Allow-Origin", "*");
-    }
-#endif
+    addOptionalCORSHeader(response);
     request->send(response);
 }
 
@@ -503,11 +506,7 @@ void handleTXstate(AsyncWebServerRequest *request) {
     json["channelBNoise"] = txState.channelBNoise;
 
     serializeJson(json, *response);
-#ifdef CORS_HEADER
-    if (appSettings.corsHeader) {
-        response->addHeader("Access-Control-Allow-Origin", "*");
-    }
-#endif
+    addOptionalCORSHeader(response);
     request->send(response);
 }
 
@@ -558,11 +557,7 @@ void handleWifi(AsyncWebServerRequest *request) {
     json[PARAM_PASSWORD] = wifiSettings.password;
 
     serializeJson(json, *response);
-#ifdef CORS_HEADER
-    if (appSettings.corsHeader) {
-        response->addHeader("Access-Control-Allow-Origin", "*");
-    }
-#endif
+    addOptionalCORSHeader(response);
     request->send(response);
     if (request->params() == 3) {
         writeJsonFile(WIFI_SETTINGS_FILE, json);
@@ -604,11 +599,7 @@ void handleApp(AsyncWebServerRequest *request) {
     json[PARAM_AISMEM] = false;
 #endif
     serializeJson(json, *response);
-#ifdef CORS_HEADER
-    if (appSettings.corsHeader) {
-        response->addHeader("Access-Control-Allow-Origin", "*");
-    }
-#endif
+    addOptionalCORSHeader(response);
     request->send(response);
     if (request->params() == 2) {
         writeJsonFile(APP_SETTINGS_FILE, json);
@@ -656,15 +647,13 @@ void handleProtocol(AsyncWebServerRequest *request) {
     json[PARAM_WEBSOCKET_PORT] = protocolSettings.websocketPort;
 
     serializeJson(json, *response);
-#ifdef CORS_HEADER
-    if (appSettings.corsHeader) {
-        response->addHeader("Access-Control-Allow-Origin", "*");
-    }
-#endif
+    addOptionalCORSHeader(response);
     request->send(response);
     if (request->params() == 6) {
         writeJsonFile(PROTOCOL_SETTINGS_FILE, json);
     }
+    stopNMEAForward();
+    startNMEAForward();
 }
 
 void handleStation(AsyncWebServerRequest *request) {
@@ -709,11 +698,7 @@ void handleStation(AsyncWebServerRequest *request) {
     json["bowoffset"] = stationSettings.bowoffset;
 
     serializeJson(json, *response);
-#ifdef CORS_HEADER
-    if (appSettings.corsHeader) {
-        response->addHeader("Access-Control-Allow-Origin", "*");
-    }
-#endif
+    addOptionalCORSHeader(response);
     request->send(response);
 }
 
@@ -730,11 +715,7 @@ void handleSystem(AsyncWebServerRequest *request) {
     json["bootloader"] = systemSettings.bootloader;
 
     serializeJson(json, *response);
-#ifdef CORS_HEADER
-    if (appSettings.corsHeader) {
-        response->addHeader("Access-Control-Allow-Origin", "*");
-    }
-#endif
+    addOptionalCORSHeader(response);
     request->send(response);
     Serial2.print("sys?\r\n");
 }
@@ -800,7 +781,7 @@ void startWebServer() {
         server.begin();
         Serial.println("Webserver started");
         if (mDNSOK) {
-            MDNS.addService("http", "tcp", 80);
+            MDNS.addService("_http", "_tcp", 80);
         }
         initWebSocket();
     }
@@ -874,32 +855,34 @@ void startNMEAForward() {
     if (protocolSettings.tcp) {
         startTCPNMEAForward(protocolSettings.tcpPort);
         if (mDNSOK) {
-            MDNS.addService("nmea-0183", "tcp", protocolSettings.tcpPort);
+            MDNS.addService("_nmea-0183", "_tcp", protocolSettings.tcpPort);
         }
     }
 
     if (protocolSettings.udp) {
         udpForwardOK = true;
         if (mDNSOK) {
-            MDNS.addService("nmea-0183", "udp", protocolSettings.udpPort);
+            MDNS.addService("_nmea-0183", "_udp", protocolSettings.udpPort);
         }
     }
 
     if (protocolSettings.websocket) {
         websocketOk = true;
         if (mDNSOK) {
-            MDNS.addService("nmea-0183", "ws", protocolSettings.websocketPort);
+            MDNS.addService("_nmea-0183-ws_", "_tcp",
+                            protocolSettings.websocketPort);
         }
     }
 }
 
 void stopNMEAForward() {
     udpForwardOK = false;
-
+    websocketOk = false;
     stopTCPNMEAForward();
     if (mDNSOK) {
         mdns_service_remove("_nmea-0183", "_tcp");
         mdns_service_remove("_nmea-0183", "_udp");
+        mdns_service_remove("_nmea-0183-ws", "_tcp");
     }
 }
 

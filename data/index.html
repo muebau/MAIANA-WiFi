@@ -176,7 +176,8 @@
         var aisdecoder;
         var nmeas0183Lines = [];
         var nmeavalues = {};
-
+        var reconnectAttempts = 0;
+        const maxReconnectDelay = 32000; // Maximum retry delay in milliseconds
 
         var state = { "lat": 0, "lon": 0 };
         var gps = new GPS;
@@ -221,15 +222,28 @@
             websocket.onmessage = onMessage;
             websocket.onopen = onOpen;
             websocket.onclose = onClose;
+            websocket.onerror = onError;
         }
         function onOpen(event) {
             console.log('Connection opened');
         }
 
         function onClose(event) {
-            console.log('Connection closed');
-            setTimeout(initWebSocket, 2000);
+            console.log('Connection closed:', event);
+            // Implement exponential backoff for reconnection attempts
+            const retryDelay = Math.min(Math.pow(2, reconnectAttempts), maxReconnectDelay);
+            console.log(`Reconnecting in ${retryDelay} milliseconds`);
+            setTimeout(() => {
+                reconnectAttempts++;
+                initWebSocket();
+            }, retryDelay);
         }
+
+        function onError(error) {
+            console.error('WebSocket error:', error);
+            websocket.close();
+        }
+
         function onMessage(event) {
             // Show max 1000 lines of log
             var nmeadata = event.data;

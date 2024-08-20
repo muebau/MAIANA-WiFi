@@ -46,6 +46,58 @@
         <div class="infobox" id="speedbox" name="speedbox">
                 <h1>Speedometer</h1>
         </div>
+
+        <div class="infobox" id="infobox">
+                <h1>Information</h1>
+                <table>
+                        <tr>
+                                <th>Date</th>
+                                <td id="date"></td>
+                        </tr>
+                        <tr>
+                                <th>Latitude</th>
+                                <td id="lat"></td>
+                        </tr>
+                        <tr>
+                                <th>Longitude</th>
+                                <td id="lon"></td>
+                        </tr>
+
+                        <tr>
+                                <th>Altitude</th>
+                                <td id="alt"></td>
+                        </tr>
+                        <tr>
+                                <th>Speed</th>
+                                <td id="speed"></td>
+                        </tr>
+                        <tr>
+                                <th>Status</th>
+                                <td id="status"></td>
+                        </tr>
+                        <tr>
+                                <th>PDOP</th>
+                                <td id="pdop"></td>
+                        </tr>
+                        <tr>
+                                <th>VDOP</th>
+                                <td id="vdop"></td>
+                        </tr>
+                        <tr>
+                                <th>HDOP</th>
+                                <td id="hdop"></td>
+                        </tr>
+                        <tr>
+                                <th>Satellites in Use</th>
+                                <td id="active"></td>
+                        </tr>
+                        <tr>
+                                <th>Satellites in View</th>
+                                <td id="view"></td>
+                        </tr>
+                </table>
+        </div>
+
         <script>
                 var development_ip = ""
                 var gateway = development_ip == "" ? `ws://${window.location.hostname}/ws` : `ws://${development_ip}/ws`;
@@ -54,6 +106,8 @@
                 var gps = new GPS;
                 gps.state.bearing = 0;
                 var prev = { lat: null, lon: null };
+                var reconnectAttempts = 0;
+                const maxReconnectDelay = 32000; // Maximum retry delay in milliseconds
 
                 gps.on('data', parsed => {
                         console.log(parsed);
@@ -66,21 +120,28 @@
                         }
                 });
 
-
                 function initWebSocket() {
                         console.log('Trying to open a WebSocket connection...');
                         websocket = new WebSocket(gateway);
                         websocket.onopen = onOpen;
                         websocket.onclose = onClose;
                         websocket.onmessage = onMessage;
+                        websocket.onerror = onError;
                 }
+
                 function onOpen(event) {
                         console.log('Connection opened');
                 }
 
                 function onClose(event) {
-                        console.log('Connection closed');
-                        setTimeout(initWebSocket, 2000);
+                        console.log('Connection closed:', event);
+                        // Implement exponential backoff for reconnection attempts
+                        const retryDelay = Math.min(Math.pow(2, reconnectAttempts), maxReconnectDelay);
+                        console.log(`Reconnecting in ${retryDelay} milliseconds`);
+                        setTimeout(() => {
+                                reconnectAttempts++;
+                                initWebSocket();
+                        }, retryDelay);
                 }
 
                 function onMessage(event) {
@@ -89,11 +150,17 @@
                                 gps.update(nmeaSentence);
                         }
                 }
-                window.addEventListener('load', onLoad);
+
+                function onError(error) {
+                        console.error('WebSocket error:', error);
+                        websocket.close();
+                }
+
                 function onLoad(event) {
                         initWebSocket();
                 }
 
+                window.addEventListener('load', onLoad);
 
                 function updateSats(state) {
                         if (prev.lat !== null && prev.lon !== null) {
@@ -376,7 +443,7 @@
                         var speed = data.speed;
 
                         textSpeed.text(speed);
-                        if (typeof speec === 'undefined' || speed === 'NaN') {
+                        if (typeof speed === 'undefined' || speed === 'NaN') {
                                 speed = 0;
                         }
 
@@ -512,60 +579,6 @@
 
         </script>
 
-        <div class="infobox" id="infobox">
-
-                <h1>Information</h1>
-                <table>
-                        <tr>
-                                <th>Date</th>
-                                <td id="date"></td>
-                        </tr>
-                        <tr>
-                                <th>Latitude</th>
-                                <td id="lat"></td>
-                        </tr>
-                        <tr>
-                                <th>Longitude</th>
-                                <td id="lon"></td>
-                        </tr>
-
-                        <tr>
-                                <th>Altitude</th>
-                                <td id="alt"></td>
-                        </tr>
-                        <tr>
-                                <th>Speed</th>
-                                <td id="speed"></td>
-                        </tr>
-                        <tr>
-                                <th>Status</th>
-                                <td id="status"></td>
-                        </tr>
-
-                        <tr>
-                                <th>PDOP</th>
-                                <td id="pdop"></td>
-                        </tr>
-                        <tr>
-                                <th>VDOP</th>
-                                <td id="vdop"></td>
-                        </tr>
-                        <tr>
-                                <th>HDOP</th>
-                                <td id="hdop"></td>
-                        </tr>
-                        <tr>
-                                <th>Satellites in Use</th>
-                                <td id="active"></td>
-                        </tr>
-                        <tr>
-                                <th>Satellites in View</th>
-                                <td id="view"></td>
-                        </tr>
-
-
-                </table>
-        </div>
 </body>
 
 </html>
