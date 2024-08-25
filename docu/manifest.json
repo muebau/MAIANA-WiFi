@@ -1,7 +1,6 @@
 {
     "name": "MAIANA-Wifi",
     "version": "0.1.0",
-    "funding_url": "https://github.com/marcelrv",
     "builds": [
         {
             "chipFamily": "ESP32",
