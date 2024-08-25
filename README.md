@@ -15,7 +15,7 @@ This way this adapter makes the AIS a standalone system if wanted and the user j
 There are multiple ways to configure the WiFi
 1) Via the webpage. Enable the config mode, this will set the MAIANA-Wifi in Access point mode and you can connect to it.
 The default WiFi password for the config mode is `MAIANA-AIS`. 
-When connected, browse to http://192.168.4.1 and in the config page configure the WiFi settings to connect to your network or to setup hotspot mode.
+When connected, browse to http://MAIANA.local/ or http://192.168.4.1 and in the config page configure the WiFi settings to connect to your network or to setup hotspot mode.
 2) Via the serial port. Connect with baudrate 38400 to the ESP. Send a line with your WiFi configuration details as json e.g.: `{"ssid":"myboatsNetwork", "password":"sailingTime"}` 
 
 
@@ -35,7 +35,7 @@ with a detailed view for the GPS information
 ![](docu/img/gpsDashboard.png)
 
 ## OTA Firmware Update
-Firmware can be update over-the-air OTA by going to the `http://[your device ip]/update` page and select the file to upload (firmware or SPIFF file system with webpages).
+Firmware can be update over-the-air OTA by going to http://MAIANA.local/update or `http://[your device ip]/update` page and select the file to upload (firmware or SPIFF file system with webpages).
 
 Note that when the SPIFF / webpages are updated, configuration details like port setup and WiFi details will be overwritten. (not the settings on your MAIANA AIS device!)
 
