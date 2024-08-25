@@ -40,3 +40,15 @@ Note that when the SPIFF / webpages are updated configuration details like port 
 ## Included JS projects
 * GPS parsing https://github.com/infusion/GPS.js
 * AIS parsing https://github.com/mjaros/ais-decoder 
+
+![](../main/docu/img/ScreenshotMAIANA.png)
+
+## Contributors
+
+A bit thank you to:
+
+@Yamioni2007
+
+@marcelrv
+
+@muebau
