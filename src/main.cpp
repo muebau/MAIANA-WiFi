@@ -1326,10 +1326,11 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
              AwsEventType type, void *arg, uint8_t *data, size_t len) {
     switch (type) {
         case WS_EVT_CONNECT:
-            // sendHistoryWS(client);
+#ifdef AISMEMORY
             ws_queue_client = client->id();
             ws_queue_msgId = 0;
             ws_queue_loop = millis();
+#endif
             break;
         case WS_EVT_DISCONNECT:
             Serial.printf("WebSocket client #%u disconnected\n", client->id());
