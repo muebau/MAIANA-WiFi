@@ -869,7 +869,7 @@ void startNMEAForward() {
     if (protocolSettings.websocket) {
         websocketOk = true;
         if (mDNSOK) {
-            MDNS.addService("_nmea-0183-ws_", "_tcp",
+            MDNS.addService("_nmea-0183-ws", "_tcp",
                             protocolSettings.websocketPort);
         }
     }
