@@ -651,9 +651,9 @@ void handleProtocol(AsyncWebServerRequest *request) {
     request->send(response);
     if (request->params() == 6) {
         writeJsonFile(PROTOCOL_SETTINGS_FILE, json);
+        stopNMEAForward();
+        startNMEAForward();
     }
-    stopNMEAForward();
-    startNMEAForward();
 }
 
 void handleStation(AsyncWebServerRequest *request) {
@@ -1185,7 +1185,7 @@ void forwardIt(const char *line) {
         websocketSend(line);
     }
 #ifdef AISMEMORY
-    if (line[0] == '!' && line[1] == 'A') {
+    if (appSettings.aisMemory && line[0] == '!' && line[1] == 'A') {
         storeAIS(line);
     }
 #endif
@@ -1358,7 +1358,7 @@ void setup() {
     Serial2.begin(38400);  //, SERIAL_8N1, RXD2, TXD2);
     requestAISInfomation();
 
-    Serial.println("Maiana AIS Transponder forwarder started");
+    Serial.println("MAIANA-WiFi AIS Transponder forwarder started");
 
     // GPIO for switch
     pinMode(SWITCH, INPUT_PULLUP);
