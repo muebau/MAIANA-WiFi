@@ -2,18 +2,15 @@
 
 #include <Arduino.h> /* we need arduino functions to implement this */
 #include <ArduinoJson.h>
+#include <ElegantOTA.h>
 #include <FS.h>
 #include <SPIFFS.h>
-
-#include <ElegantOTA.h>
-
-
 
 // OTA helper functions
 
 unsigned long ota_progress_millis = 0;
 
-void setupOTA( AsyncWebServer *server) {
+void setupOTA(AsyncWebServer *server) {
     ElegantOTA.begin(server);  // Start ElegantOTA
     ElegantOTA.setAutoReboot(true);
 
@@ -49,24 +46,24 @@ void onOTAEnd(bool success) {
     // <Add your own code here>
 }
 
-void otaLoop() {
-    ElegantOTA.loop();
-}
+void otaLoop() { ElegantOTA.loop(); }
 
 // JSON file helper functions
 
-bool loadJsonFile(String filename, JsonDocument& doc) {
+bool loadJsonFile(String filename, JsonDocument &doc) {
     if (!SPIFFS.begin(true)) {
         Serial.println("Failed to mount file system");
         return false;
     }
     if (!SPIFFS.exists(filename)) {
-        Serial.println("File not found");
+        Serial.print("File not found: ");
+        Serial.println(filename);
         return false;
     }
     File file = SPIFFS.open(filename, "r");
     if (!file) {
-        Serial.println("Failed to open file");
+        Serial.println("Failed to open file for reading: ");
+        Serial.println(filename);
         return false;
     }
     size_t size = file.size();
@@ -75,7 +72,9 @@ bool loadJsonFile(String filename, JsonDocument& doc) {
     file.close();
     DeserializationError error = deserializeJson(doc, buf.get());
     if (error) {
-        Serial.print("Failed to parse file: ");
+        Serial.print("Failed to parse file ");
+        Serial.println(filename);
+        Serial.print(": ");
         Serial.println(error.c_str());
         return false;
     }
@@ -92,12 +91,15 @@ bool writeJsonFile(String filename, JsonDocument &doc) {
 
     File file = SPIFFS.open(filename, "w");
     if (!file) {
-        Serial.println("Failed to open file for writing");
+        Serial.print("Failed to open file for writing: ");
+        Serial.println(filename);
+
         return false;
     }
 
     if (serializeJson(doc, file) == 0) {
-        Serial.println("Failed to write to file");
+        Serial.println("Failed to write to file: ");
+        Serial.println(filename);
         file.close();
         return false;
     }
@@ -108,7 +110,6 @@ bool writeJsonFile(String filename, JsonDocument &doc) {
     Serial.println();
     return true;
 };
-
 
 String getValue(String data, char separator, int index) {
     int found = 0;

@@ -601,7 +601,7 @@ void handleApp(AsyncWebServerRequest *request) {
     serializeJson(json, *response);
     addOptionalCORSHeader(response);
     request->send(response);
-    if (request->params() == 2) {
+    if (request->params() == 3) {
         writeJsonFile(APP_SETTINGS_FILE, json);
     }
 }
