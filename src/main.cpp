@@ -128,6 +128,10 @@ bool udpForwardOK = false;
 bool tcpForwardOK = false;
 bool websocketOk = false;
 
+bool systemRefreshPending = true;
+bool stationRefreshPending = true;
+bool txRefreshPending = true;
+
 static std::vector<AsyncClient *> clients;
 
 // Set config WifI credentials
@@ -233,6 +237,9 @@ void readWifiFromFile();
 bool readProtocolFromFile();
 bool portIsValid(int port) { return port > 0 && port < 65536; }
 void websocketSend(const char *line);
+void systemRefresh();
+void stationRefresh();
+void txRefresh();
 
 // GPRMC
 void gpsTimeToStruct(String input) {
@@ -484,8 +491,7 @@ void handleTXstate(AsyncWebServerRequest *request) {
         } else {
             Serial2.print("tx on\r\n");
         }
-
-        Serial2.print("tx?\r\n");
+        txRefreshPending = true;
     }
     AsyncResponseStream *response =
         request->beginResponseStream("application/json");
@@ -682,8 +688,7 @@ void handleStation(AsyncWebServerRequest *request) {
             stationSettings.beam + "," + stationSettings.bowoffset + "," +
             stationSettings.portoffset);
     }
-    Serial2.print("station?\r\n");
-
+    stationRefreshPending = true;
     AsyncResponseStream *response =
         request->beginResponseStream("application/json");
     DynamicJsonDocument json(1024);
@@ -717,7 +722,7 @@ void handleSystem(AsyncWebServerRequest *request) {
     serializeJson(json, *response);
     addOptionalCORSHeader(response);
     request->send(response);
-    Serial2.print("sys?\r\n");
+    systemRefreshPending = true;
 }
 
 void notFound(AsyncWebServerRequest *request) {
@@ -1048,9 +1053,9 @@ bool loadWifiSettings() {
 }
 
 void requestAISInfomation() {
-    Serial2.print("sys?\r\n");
-    Serial2.print("station?\r\n");
-    Serial2.print("tx?\r\n");
+    systemRefreshPending = true;
+    stationRefreshPending = true;
+    txRefreshPending = true;
 }
 
 void configPoll() {
@@ -1352,6 +1357,21 @@ void initWebSocket() {
     server.addHandler(&ws);
 }
 
+void systemRefresh(){
+    Serial2.print("sys?\r\n");
+    systemRefreshPending = false;
+}
+
+void stationRefresh(){
+    Serial2.print("station?\r\n");
+    stationRefreshPending = false;
+}
+
+void txRefresh(){
+    Serial2.print("tx?\r\n");
+    txRefreshPending = false;
+}
+
 void setup() {
     // general
     Serial.begin(38400);
@@ -1398,6 +1418,15 @@ void loop() {
         char c = Serial2.read();
         createAndHandleLine(c);
         Serial.write(c);
+    }
+    if (systemRefreshPending) {
+        systemRefresh();
+    }
+    if (stationRefreshPending) {
+        stationRefresh();
+    }
+    if (txRefreshPending){
+        txRefresh();
     }
     configPoll();
     otaLoop();
