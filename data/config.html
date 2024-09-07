@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>MAIANA</title>
+    <link rel="stylesheet" type="text/css" href="js/style.css">
+
+    <style>
+
+    </style>
+    <link rel="icon" type="image/png"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACqklEQVQ4T42SbUhTURjHn3Pu3VU3IUq02RKlog9qhGH4oYxK6ItUVKaohB96+1ZBL4ShrtIsKzT8kC9IQe+7YJgVkoWoqYGv2Nzm2DQkndNyq5b3lu6ezr2ytTU/dL6d55z/7+H5P38E/3GIIWUfYMgBQoywwNSjvP4vPhkK1J8oLIvFwjyuqSybDKyTJ8lxwHIJFLANEDoKIBWgw0Pd8h8/4HRx+XlBEK/TEq2RUYRQ5dx4YgPPZ3sJv6WS/twFEqkGaaEbGO4FiMIOdMTsUAC9w9Z1zW/eWqadTtU/E/URFuXXl+utxLBZB5hpoJAm2oCjjVah7MGSJYDJdqm9s7vUarOHOMKyjLsgL9eMGfwh1ZJZBpK6h0IKAKMzKGsgRwH0meyPJz5P5ra0vgsBxMethT0Zu0GSvO/TNm1MJ3zKfcBiCUBYMjo09GoJMGJ/SIDkN71qgZnZWT9kjVYLGTvToa2zC6Yczm+I/E67W1E6GtjFN8IFBOjGnMsFz5tfg9frBZ+4ta0dpp0zioYg1O8eT0yTjQ1aY4/ZnKAinJUWVbIPvQODcHBvJgSK/QKETtZW6OtCctA3YrtDN3hKfjCaLDA0/BHmBWG5mJnqbl5OCgEYOjqitZqoCXVEeLj8aLOPQXtXjzJOUKgIIWhxUVdXdc0RFKQaw8tGlmEObIiPg0h1hKKZc7uhk0KcM3+NpWUJExRbc0uvGKOYWGto3g6AO+Q7PaBbHQ0xUSvlC00vgckpB9jHP8EPj+eX2+W6WHW1sCpohNv3nhVp1JorssB3VCoWVmg0oNPG8CqWFSWQjIigp6lJ6ydC1njsXPH+MI5r1ERGYo7jlK6iKMJPj8fydcyYzPN8sBEBBH/L42eLtgLGWTQP8UBgXkJSvyDiB4+q9d+XW4Wv9gf1IB4gEyeL3wAAAABJRU5ErkJggg==" />
+</head>
+
+<body>
+    <h1>MAIANA<sup>&reg;</sup> Config</h1>
+
+
+    <div class="infobox" id="linkbuttons">
+        <div class="menulink">
+            <a href="/"> Home </a>
+            <a href="dashboard.html">GPS</a>
+            <a href="config.html" style="background-color: #06b;">Config </a>
+        </div>
+    </div>
+
+    <div class="infobox" id="infobox">
+        <button type="button" id="refresh" style="margin-top: 0px; margin-bottom: 0%;">Reload Config</button>
+    </div>
+
+
+    <div>
+        <form>
+            <fieldset>
+                <legend>WiFi settings</legend>
+
+                <div class="radioButtons">
+                    <input type="radio" id="wifi-none" name="wifi" value="none" checked>
+                    <label for="wifi-none">NONE</label>
+
+                    <input type="radio" id="wifi-ap" name="wifi" value="ap">
+                    <label for="wifi-ap">Access Point</label>
+
+                    <input type="radio" id="wifi-sta" name="wifi" value="sta">
+                    <label for="wifi-sta">Client</label>
+                </div>
+
+                <div id="networkbox">
+                    <div id="networks">
+                    </div>
+                    <button type="button" id="wifi-scan">Scan</button>
+                </div>
+
+                <label for="wifi-ssid">SSID</label>
+                <input type="text" id="wifi-ssid" name="ssid" value="MAIANA" maxlength="32" required>
+
+                <label for="wifi-password">password</label>
+                <input type="text" id="wifi-password" name="password" value="" maxlength="63" required>
+
+                <button type="button" id="wifi-genpw">Generate password</button>
+
+                <button type="button" id="wifi-set">SET</button>
+            </fieldset>
+        </form>
+    </div>
+    <div>
+        <form width="">
+            <fieldset>
+                <legend>NMEA0183 forwarding</legend>
+                <label for="tcp-port">TCP</label>
+                <div class="netselect" id="tcp" name="tcp">
+                    <input type="checkbox" id="tcp-enabled" name="tcp-enabled">
+                    <label for="tcp-enabled" style="margin-bottom: 20px;"></label>
+                    <input type="number" id="tcp-port" name="tcp-port" value="10110" min="1" max="65536"
+                        class="port-input">
+                </div>
+                <label for="udp-port">UDP</label>
+                <div class="netselect">
+                    <input type="checkbox" id="udp-enabled" name="udp-enabled">
+                    <label for="udp-enabled" style="margin-bottom: 20px;"></label>
+                    <input type="number" id="udp-port" name="udp-port" value="2000" min="1" max="65536"
+                        class="port-input">
+                </div>
+                <label for="websocket-port">WebSocket</label>
+                <div class="netselect">
+                    <input type="checkbox" id="websocket-enabled" name="websocket-enabled">
+
+                    <label for="websocket-enabled" style="margin-bottom: 20px;"></label>
+                    <input type="number" id="websocket-port" name="websocket-port" value="80" min="1" max="65536"
+                        class="port-input" disabled>
+                </div>
+                <button type="button" id="protocol-set">SET</button>
+            </fieldset>
+        </form>
+    </div>
+    <div>
+        <form>
+            <fieldset>
+                <legend>Station data</legend>
+
+                <label for="station-mmsi">MMSI</label>
+                <input type="text" id="station-mmsi" name="station-mmsi" value="" pattern="[0-9]{9}" required>
+
+                <label for="station-callsign">call sign</label>
+                <input type="text" id="station-callsign" name="station-callsign" value="" pattern="[0-9A-Z]" required>
+
+                <label for="station-vesselname">vessel name</label>
+                <input type="text" id="station-vesselname" name="station-vesselname" value="" pattern="[0-9A-Za-z]"
+                    required>
+
+                <label for="station-vesseltype">vessel type</label>
+                <select id="station-vesseltype">
+                    <option value="34">Diving</option>
+                    <option value="30">Fishing</option>
+                    <option value="37" selected>Pleasure craft</option>
+                    <option value="36">Sailing</option>
+                </select>
+
+                <label for="station-loa">LOA (meter)</label>
+                <input type="number" id="station-loa" name="station-loa" value="" min="1" required>
+
+                <label for="station-beam">beam (meter)</label>
+                <input type="number" id="station-beam" name="station-beam" value="" min="1" required>
+
+                <label for="station-portoffset">port offset (meter)</label>
+                <input type="number" id="station-portoffset" name="station-portoffset" value="" min="0" required>
+
+                <label for="station-bowoffset">bow offset (meter)</label>
+                <input type="number" id="station-bowoffset" name="station-bowoffset" value="" min="0" required>
+
+                <details>
+                    <summary>more info</summary>
+                    <div id="infodetails">
+                        <svg id="shipFigure" height="400" width="420">
+                            <polyline points="20,380 20,140 40,80 60,60 100,20 140,60 160,80 180,140 180,380 20,380"
+                                style="fill:none;stroke:white;stroke-width:3" />
+                            <text id="beamText" x="50" y="230" fill="white">beam</text>
+                            <line x1="30" y1="210" x2="170" y2="210" style="stroke:rgb(255,0,0);stroke-width:2" />
+                            <text id="loaText" x="170" y="-210" fill="white" transform="rotate(90)"
+                                id="text356">LOA</text>
+                            <line x1="200" y1="20" x2="200" y2="380" style="stroke:rgb(255,0,0);stroke-width:2" />
+
+                            <polyline points="20,380 20,140 40,80 60,60 100,20 140,60 160,80 180,140 180,380 20,380"
+                                style="fill:none;stroke:white;stroke-width:3" transform="translate(220, 0)" />
+                            <line id="poLine" x1="240" y1="210" x2="400" y2="210"
+                                style="stroke:rgb(255,0,0);stroke-width:2" />
+                            <line id="boLine" x1="320" y1="20" x2="320" y2="380"
+                                style="stroke:rgb(255,0,0);stroke-width:2" />
+                        </svg>
+                    </div>
+                </details>
+
+                <button type="button" id="station-set">SET</button>
+            </fieldset>
+        </form>
+    </div>
+    <div>
+        <form width="">
+            <fieldset>
+                <legend>App settings</legend>
+                <label for="app-version">Version</label>
+                <input type="text" id="app-version" name="app-version" value="" disabled>
+
+                <label for="app-build">Build</label>
+                <input type="text" id="app-build" name="app-build" value="" style="margin-bottom: 10px;" disabled>
+                <div style="margin-bottom: 20px;">Update Firmware <a href="/update">page</a></div>
+
+                <label for="app-demoMode" title="Simulates NMEA0183 messages from MAIANA">Demo Mode</label>
+                <div class="netselect" id="app-demoMode" name="app-demoMode"
+                    title="Simulates NMEA0183 messages from MAIANA">
+                    <input type="checkbox" id="app-demoMode-enabled" name="app-demoMode-enabled">
+                    <label for="app-demoMode-enabled" style="margin-bottom: 20px;"></label>
+                </div>
+                <label for="app-corsHeader" title="Sets the Access-Control-Allow-Origin header">CORS headers</label>
+                <div class="netselect" id="app-corsHeader" name="app-corsHeader"
+                    title="Sets the Access-Control-Allow-Origin header">
+                    <input type="checkbox" id="app-corsHeader-enabled" name="app-corsHeader-enabled">
+                    <label for="app-corsHeader-enabled" style="margin-bottom: 20px;"></label>
+                </div>
+                <label for="app-aisMemory"
+                    title="Upon TCP & websocket connect resend last AIS messages for each ship">AIS memory</label>
+                <div class="netselect" id="app-aisMemory" name="app-aisMemory"
+                    title="Upon TCP & websocket connect resend last AIS messages for each ship">
+                    <input type="checkbox" id="app-aisMemory-enabled" name="app-aisMemory-enabled">
+                    <label for="app-aisMemory-enabled" style="margin-bottom: 20px;"></label>
+                </div>
+                <button type="button" id="app-set">SET</button>
+            </fieldset>
+        </form>
+
+    </div>
+
+    <script>
+
+        var development_ip = ""
+        var gateway = development_ip == "" ? `ws://${window.location.hostname}/ws` : `ws://${development_ip}/ws`;
+
+        function setFigureData(loa, beam, poffset, boffset) {
+            let fig = document.getElementById("shipFigure");
+            let loaText = document.getElementById("loaText");
+            loaText.innerHTML = "hello";
+        }
+
+        function get(url, params) {
+            url += '?' + new URLSearchParams(params).toString();
+            url = development_ip == "" ? url : `http://${development_ip}${url}`
+
+            return fetch(url).then(data => data.json());
+        }
+
+        document.getElementById('wifi-set').onclick = function () {
+            let type = document.querySelector('input[name="wifi"]:checked').value;
+            let ssid = document.getElementById('wifi-ssid').value;
+            let password = document.getElementById('wifi-password').value;
+
+            get("/wifi", { "type": type, "ssid": ssid, "password": password }).then(data => {
+            });
+        };
+        document.getElementById('wifi-genpw').onclick = function () {
+            document.getElementById('wifi-password').value = Math.random().toString(36).substr(2, 16);
+        };
+
+        document.getElementById('protocol-set').onclick = function () {
+            let tcp = document.querySelector('input[name="tcp-enabled"]:checked') !== null;
+            let tcpPort = document.getElementById('tcp-port').value;
+            let udp = document.querySelector('input[name="udp-enabled"]:checked') !== null;
+            let udpPort = document.getElementById('udp-port').value;
+            let websocket = document.querySelector('input[name="websocket-enabled"]:checked') !== null;
+            let websocketPort = document.getElementById('websocket-port').value;
+
+            get("/protocol", { "tcp": tcp, "tcpport": tcpPort, "udp": udp, "udpport": udpPort, "websocket": websocket, "websocketport": websocketPort }).then(data => {
+            });
+        };
+
+        document.getElementById('station-set').onclick = function () {
+            let mmsi = document.getElementById('station-mmsi').value;
+            let callsign = document.getElementById('station-callsign').value;
+            let vesselname = document.getElementById('station-vesselname').value;
+            let vesseltype = document.getElementById('station-vesseltype').value;
+            let loa = document.getElementById('station-loa').value;
+            let beam = document.getElementById('station-beam').value;
+            let portoffset = document.getElementById('station-portoffset').value;
+            let bowoffset = document.getElementById('station-bowoffset').value;
+
+            get("/station", { "mmsi": mmsi, "callsign": callsign, "vesselname": vesselname, "vesseltype": vesseltype, "loa": loa, "beam": beam, "portoffset": portoffset, "bowoffset": bowoffset }).then(data => {
+            });
+        };
+
+        function dateFromDigits(t, d) {
+            let date = new Date("20" + d.substring(4, 6) + "-" + d.substring(2, 4) + "-" + d.substring(0, 2) + "T" + t.substring(0, 2) + ":" + t.substring(2, 4) + ":" + t.substring(4, 6) + "Z");
+            if (!(date instanceof Date) || isNaN(date)) {
+                date = new Date(0);
+            }
+            return date;
+        }
+
+        function buildElement(content) {
+            if (content != null) {
+                if (content instanceof HTMLElement) {
+                    return content;
+                }
+                else if (Array.isArray(content)) {
+                    return content.map(x => buildElement(x));
+                }
+                else if (typeof content == "object") {
+                    let newElement = document.createElement(content.type);
+
+                    if (content.attr) {
+                        content.attr.forEach(a => {
+                            newElement.setAttribute(a[0], a[1]);
+                        });
+                    }
+
+                    if (content.childs) {
+                        content.childs = Array.isArray(content.childs) ? content.childs : [content.childs];
+
+                        buildElement(content.childs).forEach(child => {
+                            newElement.appendChild(child);
+                        });
+                    }
+
+                    return newElement;
+                }
+                else {
+                    return document.createTextNode(content);
+                }
+            }
+            return document.createTextNode("");
+        }
+
+        function addTableRows(table, content) {
+            content.forEach(rowContent => {
+                let row = table.insertRow();
+                rowContent.forEach(cellContent => {
+                    let cell = row.insertCell();
+                    //make sure its an array
+                    cellContent = Array.isArray(cellContent) ? cellContent : [cellContent];
+                    cellContent.forEach(el => {
+                        cell.appendChild(buildElement(el));
+                    });
+                });
+            });
+        }
+
+        function refresh_info() {
+            if (document.getElementById('station-mmsi').value === '') {
+                console.log('station data empty.. refreshing');
+                refresh_station();
+            }
+        }
+
+        function refresh_wifi() {
+            get("/wifi").then(data => {
+                document.getElementById('wifi-' + data.type).checked = true;
+                document.getElementById('wifi-ssid').value = data.ssid;
+                document.getElementById('wifi-password').value = data.password;
+            });
+        }
+
+        function refresh_protocol() {
+            get("/protocol").then(data => {
+                document.getElementById('tcp-enabled').checked = data.tcp;
+                document.getElementById('tcp-port').value = data.tcpport;
+                document.getElementById('udp-enabled').checked = data.udp;
+                document.getElementById('udp-port').value = data.udpport;
+                document.getElementById('websocket-enabled').checked = data.websocket;
+                document.getElementById('websocket-port').value = data.websocketport;
+            }).then(() => {
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.dispatchEvent(new Event('change'));
+                });
+            });
+        }
+
+        function refresh_station() {
+            get("/station").then(data => {
+                document.getElementById('station-mmsi').value = data.mmsi;
+                document.getElementById('station-callsign').value = data.callsign;
+                document.getElementById('station-vesselname').value = data.vesselname;
+                document.getElementById('station-vesseltype').value = data.vesseltype;
+                document.getElementById('station-loa').value = data.loa;
+                document.getElementById('station-beam').value = data.beam;
+                document.getElementById('station-portoffset').value = data.portoffset;
+                document.getElementById('station-bowoffset').value = data.bowoffset;
+            });
+        }
+
+        function refresh_app() {
+            get("/app").then(data => {
+                document.getElementById('app-demoMode-enabled').checked = data.demoMode;
+                document.getElementById('app-corsHeader-enabled').checked = data.corsHeader;
+                document.getElementById('app-aisMemory-enabled').checked = data.aisMemory;
+                document.getElementById('app-version').value = data.version;
+                document.getElementById('app-build').value = data.build;
+            });
+        }
+
+        document.getElementById('app-set').onclick = function () {
+            let demoMode = document.getElementById("app-demoMode-enabled").checked;
+            let corsHeader = document.getElementById("app-corsHeader-enabled").checked;
+            let aisMemory = document.getElementById("app-aisMemory-enabled").checked;
+            get("/app", { "demoMode": demoMode, "corsHeader": corsHeader, "aisMemory": aisMemory }).then(data => {
+            });
+        };
+
+        function refresh_all() {
+            refresh_info();
+            refresh_wifi();
+            refresh_protocol();
+            refresh_station();
+            refresh_app();
+        };
+
+        document.getElementById('refresh').onclick = function () {
+            refresh_all();
+        };
+
+        document.getElementById('wifi-scan').onclick = function () {
+            get("/scan").then(data => {
+
+                let t = buildElement(
+                    {
+                        type: "table",
+                        childs: ["SSID \u{1F4E1}", "channel \u{1F522}", "RSSI \u{1F4F6}", "encryption \u{1F512}"].map(e => buildElement({ "type": "th", "childs": e }))
+                    }
+                );
+
+                addTableRows(t,
+                    data.map(
+                        net => [net.ssid, net.channel, net.rssi, net.secure > 0 ? "\u{1F512}" : "open"].map(
+                            e => buildElement({ "type": "div", "attr": [["onclick", "document.getElementById(\"wifi-ssid\").value = '" + net.ssid + "'"]], "childs": e })
+                        )
+                    )
+                );
+                document.getElementById('networks').innerHTML = "";
+                document.getElementById('networks').appendChild(t);
+            });
+        };
+        setInterval(() => {
+            refresh_info();
+        }, 5000);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const portCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            portCheckboxes.forEach(checkbox => {
+
+                if (checkbox.id.endsWith("-enabled")) {
+                    if (!checkbox.id.startsWith("app-")) {
+                        checkbox.addEventListener('change', function () {
+                            const portInput = this.closest('div').querySelector('.port-input');
+                            if (this.checked) {
+                                portInput.style.background = '#303245';
+                            } else {
+                                portInput.style.background = 'rgb(150 150 150)';
+                            }
+                        });
+                    }
+                } else {
+                    checkbox.addEventListener('change', function () {
+                        console.log(this.id.slice(5, 8), this.checked)
+                        nmeavalues[this.id.slice(5, 8)] = this.checked;
+                    });
+                }
+            });
+
+            // Initialize the state based on the checkbox
+            portCheckboxes.forEach(checkbox => {
+                checkbox.dispatchEvent(new Event('change'));
+            });
+            refresh_all();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,286 @@
+body {
+    align-items: center;
+    background-color: #000;
+    justify-content: center;
+    font-family: sans-serif;
+    font-size: 18px;
+    color: #eee;
+    width: 90%;
+    max-width: 600px;
+}
+
+form {
+    display: block;
+    background-color: #15172b;
+    border-radius: 20px;
+    box-sizing: border-box;
+    padding: 20px;
+    margin: 20px;
+}
+
+h1 {
+    display: block;
+    border-radius: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    padding: 20px;
+    margin: 20px;
+    align-items: center;
+    color: #eee;
+    font-family: sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+}
+
+.infobox {
+    display: block;
+    background-color: #15172b;
+    border-radius: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    padding: 20px;
+    margin: 20px;
+    align-items: center;
+    color: #eee;
+}
+
+.nmea0183box {
+
+    display: block;
+    background-color: #15172b;
+    border-radius: 20px;
+    box-sizing: border-box;
+    padding: 20px;
+    margin: 20px;
+    align-items: center;
+    color: #eee;
+}
+
+#messages {
+    background-color: #303245;
+    border: 0;
+    box-sizing: border-box;
+    color: #eee;
+    font-size: 10px;
+    height: 200px;
+    outline: 0;
+    /* padding: 4px 20px 0; */
+    max-width: 490px;
+    width: 100%;
+    text-align: left;
+    overflow: auto;
+}
+
+
+
+legend {
+    color: #eee;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+input {
+    background-color: #303245;
+    border-radius: 12px;
+    border: 0;
+    box-sizing: border-box;
+    color: #eee;
+    font-size: 18px;
+    height: 100%;
+    outline: 0;
+    padding: 4px 20px 0;
+    width: 100%;
+}
+
+select {
+    appearance: none;
+    min-height: 50px;
+    width: 100%;
+    margin-bottom: 20px;
+    background-color: #303245;
+    border-radius: 12px;
+    border: 0;
+    box-sizing: border-box;
+    color: #eee;
+    font-size: 18px;
+    height: 100%;
+    outline: 0;
+    padding: 4px 20px 0;
+}
+
+input[type=text],
+[type=number] {
+    min-height: 50px;
+    position: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+input[type=radio] {
+    display: none;
+    margin: 10px;
+}
+
+input[type=radio]+label {
+    border-radius: 12px;
+    text-align: center;
+    height: 50px;
+    display: grid;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    background-color: #303245;
+    border-color: #ddd;
+    padding: 4px 20px 0;
+    width: 100%;
+    align-items: center;
+}
+
+input[type=radio]:checked+label {
+    background-color: #08d;
+}
+
+.radioButtons {
+    display: flex;
+    justify-content: space-around;
+}
+
+button {
+    background-color: #08d;
+    border-radius: 12px;
+    border: 0;
+    box-sizing: border-box;
+    color: #eee;
+    cursor: pointer;
+    font-size: 18px;
+    height: 50px;
+    margin-top: 20px;
+    margin-bottom: 5px;
+    outline: 0;
+    text-align: center;
+    width: 100%;
+}
+
+button:active {
+    background-color: #06b;
+}
+
+table {
+    width: 100%;
+}
+
+table td {
+    padding: 2px;
+}
+
+table td:nth-child(1) {
+    text-align: end;
+}
+
+table td:nth-child(2) {
+    text-align: left;
+}
+
+tr:nth-child(odd) {
+    background-color: #303245;
+}
+
+/* Custom checkbox styles */
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]+label {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    margin-right: 10px;
+    background-color: #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+input[type="checkbox"]+label::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+input[type="checkbox"]:checked+label {
+    background-color: #007bff;
+}
+
+input[type="checkbox"]:checked+label::before {
+    transform: translateX(20px);
+}
+
+
+.nmeaselect {
+    display: flex;
+    background-color: #15172b;
+    border-radius: 20px;
+    box-sizing: border-box;
+    text-align: center;
+
+    align-items: center;
+    color: #eee;
+    width: 100%;
+}
+
+
+.netselect {
+    display: flex;
+    background-color: #15172b;
+    border-radius: 20px;
+    box-sizing: border-box;
+    text-align: center;
+
+    align-items: center;
+    color: #eee;
+    width: 100%;
+}
+
+
+
+.aisbox {
+    display: block;
+    background-color: #15172b;
+    border-radius: 20px;
+    box-sizing: border-box;
+    font-size: 10px;
+    text-align: center;
+    padding: 20px;
+    margin: 20px;
+    align-items: center;
+    color: #eee;
+}
+
+.menulink {
+    display: flex;
+    justify-content: space-around;
+}
+
+.menulink a {
+    background-color: #08d;
+    border-radius: 5px;
+    border: 0;
+    box-sizing: border-box;
+    color: #eee;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 3px;
+    margin-left: 2px;
+    margin-right: 2px;
+    outline: 0;
+    text-align: center;
+    width: 100%;
+    text-decoration: none; 
+}

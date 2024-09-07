@@ -3,172 +3,24 @@
 
 <head>
     <title>MAIANA</title>
-    <style>
-        body {
-            align-items: center;
-            background-color: #000;
-            justify-content: center;
-            font-family: sans-serif;
-            font-size: 18px;
-            color: #eee;
-            width: 90%;
-            max-width: 600px;
-        }
-
-        form {
-            display: block;
-            background-color: #15172b;
-            border-radius: 20px;
-            box-sizing: border-box;
-            padding: 20px;
-            margin: 20px;
-        }
-
-        h1 {
-            display: block;
-            border-radius: 20px;
-            box-sizing: border-box;
-            text-align: center;
-            padding: 20px;
-            margin: 20px;
-            align-items: center;
-            color: #eee;
-            font-family: sans-serif;
-            font-size: 36px;
-            font-weight: 600;
-        }
-
-        #infobox {
-            display: block;
-            background-color: #15172b;
-            border-radius: 20px;
-            box-sizing: border-box;
-            text-align: center;
-            padding: 20px;
-            margin: 20px;
-            align-items: center;
-            color: #eee;
-        }
-
-        legend {
-            color: #eee;
-            border-radius: 20px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        input {
-            background-color: #303245;
-            border-radius: 12px;
-            border: 0;
-            box-sizing: border-box;
-            color: #eee;
-            font-size: 18px;
-            height: 100%;
-            outline: 0;
-            padding: 4px 20px 0;
-            width: 100%;
-        }
-
-        select {
-            appearance: none;
-            min-height: 50px;
-            width: 100%;
-            margin-bottom: 20px;
-            background-color: #303245;
-            border-radius: 12px;
-            border: 0;
-            box-sizing: border-box;
-            color: #eee;
-            font-size: 18px;
-            height: 100%;
-            outline: 0;
-            padding: 4px 20px 0;
-        }
-
-        input[type=text],
-        [type=number] {
-            min-height: 50px;
-            position: center;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        input[type=radio] {
-            display: none;
-            margin: 10px;
-        }
-
-        input[type=radio]+label {
-            border-radius: 12px;
-            text-align: center;
-            height: 50px;
-            display: grid;
-            margin-top: 20px;
-            margin-bottom: 5px;
-            background-color: #303245;
-            border-color: #ddd;
-            padding: 4px 20px 0;
-            width: 100%;
-            align-items: center;
-        }
-
-        input[type=radio]:checked+label {
-            background-color: #08d;
-        }
-
-        .radioButtons {
-            display: flex;
-            justify-content: space-around;
-        }
-
-        button {
-            background-color: #08d;
-            border-radius: 12px;
-            border: 0;
-            box-sizing: border-box;
-            color: #eee;
-            cursor: pointer;
-            font-size: 18px;
-            height: 50px;
-            margin-top: 20px;
-            margin-bottom: 5px;
-            outline: 0;
-            text-align: center;
-            width: 100%;
-        }
-
-        button:active {
-            background-color: #06b;
-        }
-
-        table {
-            width: 100%;
-        }
-
-        table td {
-            padding: 10px;
-        }
-
-        table td:nth-child(1) {
-            text-align: end;
-        }
-
-        table td:nth-child(2) {
-            text-align: left;
-        }
-
-        tr:nth-child(odd) {
-            background-color: #303245;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="js/style.css">
     <link rel="icon" type="image/png"
         href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACqklEQVQ4T42SbUhTURjHn3Pu3VU3IUq02RKlog9qhGH4oYxK6ItUVKaohB96+1ZBL4ShrtIsKzT8kC9IQe+7YJgVkoWoqYGv2Nzm2DQkndNyq5b3lu6ezr2ytTU/dL6d55z/7+H5P38E/3GIIWUfYMgBQoywwNSjvP4vPhkK1J8oLIvFwjyuqSybDKyTJ8lxwHIJFLANEDoKIBWgw0Pd8h8/4HRx+XlBEK/TEq2RUYRQ5dx4YgPPZ3sJv6WS/twFEqkGaaEbGO4FiMIOdMTsUAC9w9Z1zW/eWqadTtU/E/URFuXXl+utxLBZB5hpoJAm2oCjjVah7MGSJYDJdqm9s7vUarOHOMKyjLsgL9eMGfwh1ZJZBpK6h0IKAKMzKGsgRwH0meyPJz5P5ra0vgsBxMethT0Zu0GSvO/TNm1MJ3zKfcBiCUBYMjo09GoJMGJ/SIDkN71qgZnZWT9kjVYLGTvToa2zC6Yczm+I/E67W1E6GtjFN8IFBOjGnMsFz5tfg9frBZ+4ta0dpp0zioYg1O8eT0yTjQ1aY4/ZnKAinJUWVbIPvQODcHBvJgSK/QKETtZW6OtCctA3YrtDN3hKfjCaLDA0/BHmBWG5mJnqbl5OCgEYOjqitZqoCXVEeLj8aLOPQXtXjzJOUKgIIWhxUVdXdc0RFKQaw8tGlmEObIiPg0h1hKKZc7uhk0KcM3+NpWUJExRbc0uvGKOYWGto3g6AO+Q7PaBbHQ0xUSvlC00vgckpB9jHP8EPj+eX2+W6WHW1sCpohNv3nhVp1JorssB3VCoWVmg0oNPG8CqWFSWQjIigp6lJ6ydC1njsXPH+MI5r1ERGYo7jlK6iKMJPj8fydcyYzPN8sBEBBH/L42eLtgLGWTQP8UBgXkJSvyDiB4+q9d+XW4Wv9gf1IB4gEyeL3wAAAABJRU5ErkJggg==" />
+    <script src="js/aisdecoder.min.js"></script>
+    <script src="js/gps.js"></script>
 </head>
 
 <body>
     <h1>MAIANA<sup>&reg;</sup></h1>
-    <div id="infobox">
+
+    <div class="infobox" id="linkbuttons">
+        <div class="menulink">
+            <a href="/" style="    background-color: #06b;"> Home </a>
+            <a href="dashboard.html">GPS</a>
+            <a href="config.html">Config </a>
+        </div>
+    </div>
+    <div class="infobox" id="infobox">
         <div id="infotext">
         </div>
         <details>
@@ -176,170 +28,334 @@
             <div id="infodetails">
             </div>
         </details>
-        <button type="button" id="toggle-tx">toggle TX</button>
-        <button type="button" id="refresh">load config</button>
+        <button type="button" id="toggle-tx">Toggle TX</button>
     </div>
-    <div>
-        <form>
-            <fieldset>
-                <legend>WiFi settings</legend>
 
-                <div class="radioButtons">
-                    <input type="radio" id="wifi-none" name="wifi" value="none" checked>
-                    <label for="wifi-none">NONE</label>
-
-                    <input type="radio" id="wifi-ap" name="wifi" value="ap">
-                    <label for="wifi-ap">Access Point</label>
-
-                    <input type="radio" id="wifi-sta" name="wifi" value="sta">
-                    <label for="wifi-sta">Client</label>
-                </div>
-
-                <div id="networkbox">
-                    <div id="networks">
-                    </div>
-                    <button type="button" id="wifi-scan">Scan</button>
-                </div>
-
-                <label for="wifi-ssid">SSID</label>
-                <input type="text" id="wifi-ssid" name="ssid" value="MAIANA" maxlength="32" required>
-
-                <label for="wifi-password">password</label>
-                <input type="text" id="wifi-password" name="password" value="" maxlength="63" required>
-
-                <button type="button" id="wifi-genpw">Generate password</button>
-
-                <button type="button" id="wifi-set">SET</button>
-            </fieldset>
-        </form>
+    <div class="aisbox" id="infobox">
+        <div id="aisbox">
+        </div>
     </div>
-    <div>
-        <form>
-            <fieldset>
-                <legend>NMEA0183 forwarding</legend>
+    <details open>
+        <summary>NMEA0183 Messages</summary>
+        <div class="nmea0183box">
+            <div style="display: flex; padding-bottom: 10px;"">
+                <div class=" nmeaselect" id="gps" name="gps">
+                <input type="checkbox" id="nmea-gps" name="nmea-gps" checked>
+                <label for="nmea-gps"></label>
+                GPS
+            </div>
+            <div class="nmeaselect" id="ais" name="ais">
+                <input type="checkbox" id="nmea-ais" name="nmea-ais" checked>
+                <label for="nmea-ais"></label>
+                AIS
+            </div>
+            <div class="nmeaselect" id="pai" name="pai">
+                <input type="checkbox" id="nmea-pai" name="nmea-pai" checked>
+                <label for="nmea-pai"></label>
+                Device
+            </div>
+        </div>
+        <fieldset>
+            <legend>NMEA0183</legend>
+            <div class="input" id="messages">Enable Websockets to see feed of NMEA0183 messages</div>
+        </fieldset>
+        </div>
+    </details>
 
-                <div class="radioButtons">
-                    <input type="radio" id="protocol-none" name="protocol" value="none" checked>
-                    <label for="protocol-none">NONE</label>
-
-                    <input type="radio" id="protocol-tcp" name="protocol" value="tcp">
-                    <label for="protocol-tcp">TCP</label>
-
-                    <input type="radio" id="protocol-udp" name="protocol" value="udp">
-                    <label for="protocol-udp">UDP</label>
-                </div>
-
-                <label for="protocol-port">port</label>
-                <input type="number" id="protocol-port" name="port" value="10110" min="1" max="65536">
-
-                <button type="button" id="protocol-set">SET</button>
-            </fieldset>
-        </form>
-    </div>
-    <div>
-        <form>
-            <fieldset>
-                <legend>Station data</legend>
-
-                <label for="station-mmsi">MMSI</label>
-                <input type="text" id="station-mmsi" name="station-mmsi" value="" pattern="[0-9]{9}" required>
-
-                <label for="station-callsign">call sign</label>
-                <input type="text" id="station-callsign" name="station-callsign" value="" pattern="[0-9A-Z]" required>
-
-                <label for="station-vesselname">vessel name</label>
-                <input type="text" id="station-vesselname" name="station-vesselname" value="" pattern="[0-9A-Za-z]"
-                    required>
-
-                <label for="station-vesseltype">vessel type</label>
-                <select id="station-vesseltype">
-                    <option value="34">Diving</option>
-                    <option value="30">Fishing</option>
-                    <option value="37" selected>Pleasure craft</option>
-                    <option value="36">Sailing</option>
-                </select>
-
-                <label for="station-loa">LOA (meter)</label>
-                <input type="number" id="station-loa" name="station-loa" value="" min="1" required>
-
-                <label for="station-beam">beam (meter)</label>
-                <input type="number" id="station-beam" name="station-beam" value="" min="1" required>
-
-                <label for="station-portoffset">port offset (meter)</label>
-                <input type="number" id="station-portoffset" name="station-portoffset" value="" min="0" required>
-
-                <label for="station-bowoffset">bow offset (meter)</label>
-                <input type="number" id="station-bowoffset" name="station-bowoffset" value="" min="0" required>
-
-                <details>
-                    <summary>more info</summary>
-                    <div id="infodetails">
-                        <svg id="shipFigure" height="400" width="420">
-                            <polyline points="20,380 20,140 40,80 60,60 100,20 140,60 160,80 180,140 180,380 20,380"
-                                style="fill:none;stroke:white;stroke-width:3" />
-                            <text id="beamText" x="50" y="230" fill="white">beam</text>
-                            <line x1="30" y1="210" x2="170" y2="210" style="stroke:rgb(255,0,0);stroke-width:2" />
-                            <text id="loaText" x="170" y="-210" fill="white" transform="rotate(90)" id="text356">LOA</text>
-                            <line x1="200" y1="20" x2="200" y2="380" style="stroke:rgb(255,0,0);stroke-width:2" />
-
-                            <polyline points="20,380 20,140 40,80 60,60 100,20 140,60 160,80 180,140 180,380 20,380"
-                                style="fill:none;stroke:white;stroke-width:3" transform="translate(220, 0)" />
-                            <line id="poLine" x1="240" y1="210" x2="400" y2="210" style="stroke:rgb(255,0,0);stroke-width:2" />
-                            <line id="boLine" x1="320" y1="20" x2="320" y2="380" style="stroke:rgb(255,0,0);stroke-width:2" />
-                        </svg>
-                    </div>
-                </details>
-
-                <button type="button" id="station-set">SET</button>
-            </fieldset>
-        </form>
-    </div>
     <script>
-        function setFigureData(loa, beam, poffset, boffset) {
-            let fig = document.getElementById("shipFigure");
-            let loaText = document.getElementById("loaText");
-            loaText.innerHTML = "hello";
+
+        shiptypeText = [
+            "Not available",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Reserved for future use",
+            "Wing in ground (WIG) - all ships of this type",
+            "Wing in ground (WIG) - Hazardous category A",
+            "Wing in ground (WIG) - Hazardous category B",
+            "Wing in ground (WIG) - Hazardous category C",
+            "Wing in ground (WIG) - Hazardous category D",
+            "Wing in ground (WIG) - Reserved for future use",
+            "Wing in ground (WIG) - Reserved for future use",
+            "Wing in ground (WIG) - Reserved for future use",
+            "Wing in ground (WIG) - Reserved for future use",
+            "Wing in ground (WIG) - Reserved for future use",
+            "Fishing",
+            "Towing",
+            "Towing: length exceeds 200m or breadth exceeds 25m",
+            "Dredging or underwater ops",
+            "Diving ops",
+            "Military ops",
+            "Sailing",
+            "Pleasure Craft",
+            "Reserved",
+            "Reserved",
+            "High speed craft (HSC) - all ships of this type",
+            "High speed craft (HSC) - Hazardous category A",
+            "High speed craft (HSC) - Hazardous category B",
+            "High speed craft (HSC) - Hazardous category C",
+            "High speed craft (HSC) - Hazardous category D",
+            "High speed craft (HSC) - Reserved for future use",
+            "High speed craft (HSC) - Reserved for future use",
+            "High speed craft (HSC) - Reserved for future use",
+            "High speed craft (HSC) - Reserved for future use",
+            "High speed craft (HSC) - No additional information",
+            "Pilot Vessel1",
+            "Search and Rescue vessel",
+            "Tug",
+            "Port Tender",
+            "Anti-pollution equipment",
+            "Law Enforcement",
+            "Spare - Local Vessel",
+            "Spare - Local Vessel",
+            "Medical Transport",
+            "Ship according to RR Resolution No. 18",
+            "Passenger - all ships of this type",
+            "Passenger - Hazardous category A",
+            "Passenger - Hazardous category B",
+            "Passenger - Hazardous category C",
+            "Passenger - Hazardous category D",
+            "Passenger - Reserved for future use",
+            "Passenger - Reserved for future use",
+            "Passenger - Reserved for future use",
+            "Passenger - Reserved for future use",
+            "Passenger - No additional information",
+            "Cargo - all ships of this type",
+            "Cargo - Hazardous category A",
+            "Cargo - Hazardous category B",
+            "Cargo - Hazardous category C",
+            "Cargo - Hazardous category D",
+            "Cargo - Reserved for future use",
+            "Cargo - Reserved for future use",
+            "Cargo - Reserved for future use",
+            "Cargo - Reserved for future use",
+            "Cargo - No additional information",
+            "Tanker - all ships of this type",
+            "Tanker - Hazardous category A",
+            "Tanker - Hazardous category B1",
+            "Tanker - Hazardous category C1",
+            "Tanker - Hazardous category D1",
+            "Tanker - Reserved for future use",
+            "Tanker - Reserved for future use",
+            "Tanker - Reserved for future use",
+            "Tanker - Reserved for future use",
+            "Tanker - No additional information",
+            "Other Type - all ships of this type",
+            "Other Type - Hazardous category A",
+            "Other Type - Hazardous category B",
+            "Other Type - Hazardous category C",
+            "Other Type - Hazardous category D",
+            "Other Type - Reserved for future use",
+            "Other Type - Reserved for future use",
+            "Other Type - Reserved for future use",
+            "Other Type - Reserved for future use",
+            "Other Type - no additional information"
+        ];
+
+        var development_ip = ""
+        var gateway = development_ip == "" ? `ws://${window.location.hostname}/ws` : `ws://${development_ip}/ws`;
+
+        var max_age = 600; //after 10 minutes the ship will be removed from the list
+
+        var websocket;
+        var aisdecoder;
+        var nmeas0183Lines = [];
+        var nmeavalues = {};
+        var reconnectAttempts = 0;
+        const maxReconnectDelay = 32000; // Maximum retry delay in milliseconds
+
+        var state = { "lat": 0, "lon": 0 };
+        var gps = new GPS;
+
+        gps.on('data', parsed => {
+            let newstate = gps.state;
+            if (typeof newstate === 'undefined' || newstate === null) {
+                console.log('Skip update. State not available');
+                console.log(parsed);
+            } else {
+                state = gps.state;
+            }
+        });
+
+        // Convert from degrees to radians
+        function degreesToRadians(degrees) {
+            var radians = (degrees * Math.PI) / 180;
+            return radians;
+        }
+        // Function takes two objects, that contain coordinates to a starting and destination location.
+        function calcDistance(startCoords, destCoords) {
+            let startingLat = degreesToRadians(startCoords.latitude);
+            let startingLong = degreesToRadians(startCoords.longitude);
+            let destinationLat = degreesToRadians(destCoords.latitude);
+            let destinationLong = degreesToRadians(destCoords.longitude);
+
+            // Radius of the Earth in kilometers
+            //let radius = 6571 // in kilometers
+            let radius = 3440.1; // in nautical miles
+
+            // Haversine equation
+            let distance = Math.acos(Math.sin(startingLat) * Math.sin(destinationLat) +
+                Math.cos(startingLat) * Math.cos(destinationLat) *
+                Math.cos(startingLong - destinationLong)) * radius;
+
+            return distance;
         }
 
-        function get(url, params) {
-            url += '?' + new URLSearchParams(params).toString();
-
-            return fetch(url).then(data => data.json());
+        function initWebSocket() {
+            console.log('Trying to open a WebSocket connection...');
+            websocket = new WebSocket(gateway);
+            websocket.onmessage = onMessage;
+            websocket.onopen = onOpen;
+            websocket.onclose = onClose;
+            websocket.onerror = onError;
+        }
+        function onOpen(event) {
+            console.log('Connection opened');
         }
 
-        document.getElementById('wifi-set').onclick = function () {
-            let type = document.querySelector('input[name="wifi"]:checked').value;
-            let ssid = document.getElementById('wifi-ssid').value;
-            let password = document.getElementById('wifi-password').value;
+        function onClose(event) {
+            console.log('Connection closed:', event);
+            // Implement exponential backoff for reconnection attempts
+            const retryDelay = Math.min(Math.pow(2, reconnectAttempts), maxReconnectDelay);
+            console.log(`Reconnecting in ${retryDelay} milliseconds`);
+            setTimeout(() => {
+                reconnectAttempts++;
+                initWebSocket();
+            }, retryDelay);
+        }
 
-            get("/wifi", { "type": type, "ssid": ssid, "password": password }).then(data => {
+        function onError(error) {
+            console.error('WebSocket error:', error);
+            websocket.close();
+        }
+
+        function onMessage(event) {
+            // Show max 1000 lines of log
+            var nmeadata = event.data;
+            if ((nmeadata.startsWith('$G') && nmeavalues['gps'] == true) ||
+                (nmeadata.startsWith('$P') && nmeavalues['pai'] == true) ||
+                (nmeadata.startsWith('!') && nmeavalues['ais'] == true)) {
+
+                nmeas0183Lines.push(event.data);
+                if (nmeas0183Lines.length > 1000) {
+                    nmeas0183Lines.shift();
+                }
+            }
+            var textarea = document.getElementById('messages');
+            textarea.innerHTML = nmeas0183Lines.join('<br>');
+            textarea.scrollTop = textarea.scrollHeight;
+
+            let nmeaSentence = event.data.trim();
+            if (nmeaSentence.startsWith("!A")) {
+                aisdecoder.write(nmeaSentence);
+            }
+            if (nmeaSentence.startsWith("$GNRMC")) {
+                gps.update(nmeaSentence);
+            }
+        }
+
+        aisKeys = { "name": "Name", "mmsi": "MMSI", "callsign": "Callsign", "lon": "Lon", "lat": "Lat", "speedOverGround": "Speed", "courseOverGround": "Course", "typeAndCargo": "Ship Type", "lastUpdate": "", "distance": "Distance", "age": "Age" };
+        ships = {};
+        var aisTableEntries = [];
+        //prepare the table entries
+        Object.entries(aisKeys).forEach(([key, name]) => {
+            if (name != "") { aisTableEntries.push(name); }
+        });
+
+
+        function create_ais_table() {
+
+            let table = document.createElement("table");
+
+            addTableRows(table, [aisTableEntries]);
+            Object.entries(ships).forEach(([key, ship]) => {
+
+                if (ship['lastUpdate'] instanceof Date) {
+                    var age = Math.round((new Date() - ship['lastUpdate']) / 1000);
+                    ship['Age'] = age > 99 ? Math.round(age / 60) + ":" + (age % 60).toString().padStart(2, '0') : age + "s";
+                    if (age > max_age) {
+                        delete ships[key];
+                        return;
+                    }
+                }
+                if (ship['Lat'] != "" && ship['Lon'] != "" && state['lat'] != 0 && state['lon'] != 0) {
+                    ship['Distance'] = calcDistance({ "latitude": state['lat'], "longitude": state['lon'] }, { "latitude": ship['Lat'], "longitude": ship['Lon'] }).toFixed(2);// + " km";
+                } else {
+                    ship['Distance'] = "";
+                }
+
+                var linevalue = [];
+                for (var para of aisTableEntries) {
+                    if ((para == 'Lon' || para == 'Lat') && ship[para] != "") {
+                        linevalue.push((ship[para]).toFixed(6));
+                    } else if (para == 'Ship Type' && ship[para] != "") {
+                        linevalue.push(shiptypeText[ship[para]]);
+                    } else {
+                        linevalue.push(ship[para]);
+                    }
+                }
+
+                addTableRows(table, [linevalue]);
             });
-        };
-        document.getElementById('wifi-genpw').onclick = function () {
-            document.getElementById('wifi-password').value = Math.random().toString(36).substr(2, 16);
-        };
 
-        document.getElementById('protocol-set').onclick = function () {
-            let type = document.querySelector('input[name="protocol"]:checked').value;
-            let port = document.getElementById('protocol-port').value;
+            box = document.getElementById('aisbox');
+            box.innerHTML = "";
+            box.appendChild(table);
+        }
 
-            get("/protocol", { "type": type, "port": port }).then(data => {
+
+        function processDecodedAISMessage(message) {
+            var msg = JSON.parse(message);
+            // console.log(msg);
+            if (msg.mmsi) {
+                if (ships[msg.mmsi] == undefined) {
+                    ships[msg.mmsi] = {};
+                    Object.entries(aisKeys).forEach(([key, name]) =>
+                        ships[msg.mmsi][name] = "");
+                }
+
+                Object.entries(aisKeys).forEach(([key, name]) => {
+                    var val = msg[key]
+                    if (val !== undefined && val !== null) {
+                        ships[msg.mmsi][name != "" ? name : key] = val;
+                    }
+                });
+                // ships[msg.mmsi]['last'] = msg;
+                ships[msg.mmsi]['lastUpdate'] = new Date();
+            }
+        }
+
+        function initAISDecoder() {
+            aisdecoder = getAISdecoder();
+            aisdecoder.on('data', function (decodedMessage) {
+                processDecodedAISMessage(decodedMessage);
             });
-        };
+        }
 
-        document.getElementById('station-set').onclick = function () {
-            let mmsi = document.getElementById('station-mmsi').value;
-            let callsign = document.getElementById('station-callsign').value;
-            let vesselname = document.getElementById('station-vesselname').value;
-            let vesseltype = document.getElementById('station-vesseltype').value;
-            let loa = document.getElementById('station-loa').value;
-            let beam = document.getElementById('station-beam').value;
-            let portoffset = document.getElementById('station-portoffset').value;
-            let bowoffset = document.getElementById('station-bowoffset').value;
-
-            get("/station", { "mmsi": mmsi, "callsign": callsign, "vesselname": vesselname, "vesseltype": vesseltype, "loa": loa, "beam": beam, "portoffset": portoffset, "bowoffset": bowoffset }).then(data => {
-            });
-        };
+        window.addEventListener('load', onLoad);
+        function onLoad(event) {
+            initWebSocket();
+            initAISDecoder();
+            create_ais_table();
+            setInterval(() => {
+                create_ais_table();
+            }, 1000);
+        }
 
         function dateFromDigits(t, d) {
             let date = new Date("20" + d.substring(4, 6) + "-" + d.substring(2, 4) + "-" + d.substring(0, 2) + "T" + t.substring(0, 2) + ":" + t.substring(2, 4) + ":" + t.substring(4, 6) + "Z");
@@ -397,6 +413,13 @@
             });
         }
 
+        function get(url, params) {
+            url += '?' + new URLSearchParams(params).toString();
+            url = development_ip == "" ? url : `http://${development_ip}${url}`
+            return fetch(url).then(data => data.json());
+        }
+
+        //TODO: parse this from the ws instead of from get
         function refresh_info() {
             Promise.all([
                 get("/info"),
@@ -411,59 +434,11 @@
                     let lastChA = dateFromDigits(txState.channelALastTime, txState.channelALastDate);
                     let lastChB = dateFromDigits(txState.channelBLastTime, txState.channelBLastDate);
 
-                    box = document.getElementById('infotext');
-                    box.innerHTML = "";
+                    box_detail = document.getElementById('infodetails');
+                    box_detail.innerHTML = "";
 
                     let table = document.createElement("table");
                     addTableRows(table, [
-                        //IP
-                        [
-                            "Network status",
-                            infoState.networkstatus
-                        ],
-                        //IP
-                        [
-                            "IP",
-                            infoState.ip
-                        ],
-                        //Config Timeout (sec)
-                        [
-                            "Config Timeout (sec)",
-                            infoState.configTimeout
-                        ],
-                    ]);
-                    box.appendChild(table);
-
-                    boxdetails = document.getElementById('infodetails');
-                    boxdetails.innerHTML = "";
-
-                    table = document.createElement("table");
-                    addTableRows(table, [
-                        //Hardware Present
-                        [
-                            "Hardware Present",
-                            txState.hardwarePresent == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Hardware Switch
-                        [
-                            "Hardware TX Switch",
-                            txState.hardwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Software TX Switch
-                        [
-                            "Software TX Switch",
-                            txState.softwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //Station data provided
-                        [
-                            "Station data provided",
-                            txState.stationData == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
-                        ],
-                        //TX status
-                        [
-                            "TX status",
-                            txState.status == "1" ? "\u{2705} (transmitting)" : "\u{26D4}\u{FE0F} (not transmitting)"
-                        ],
                         //GPS time (local)
                         [
                             "GPS time (local)",
@@ -571,78 +546,116 @@
                                 },
                                 " (" + parseInt(txState.channelBNoise, 16) + ")"
                             ]
+                        ],
+                        // empty space
+                        ["", ""],
+                        //IP
+                        [
+                            "Network status",
+                            infoState.mode
+                        ],
+                        //IP
+                        [
+                            "IP",
+                            infoState.ip
+                        ],
+                        //signal
+                        [
+                            "Signal Strength",
+                            infoState.signal + " dBm"
+                        ],
+                        //wifi reconnects
+                        [
+                            "Wifi reconnects",
+                            infoState.wifiReconnects
+                        ],
+                        //Config Timeout (sec)
+                        [
+                            "Config Timeout (sec)",
+                            infoState.configTimeout
+                        ],
+                    ]);
+                    box_detail.appendChild(table);
 
+
+                    box_main = document.getElementById('infotext');
+                    box_main.innerHTML = "";
+
+                    table = document.createElement("table");
+                    addTableRows(table, [
+                        //Hardware Present
+                        [
+                            "Hardware Present",
+                            txState.hardwarePresent == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
+                        ],
+                        //Hardware Switch
+                        [
+                            "Hardware TX Switch",
+                            txState.hardwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
+                        ],
+                        //Software TX Switch
+                        [
+                            "Software TX Switch",
+                            txState.softwareSwitch == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
+                        ],
+                        //Station data provided
+                        [
+                            "Station data provided",
+                            txState.stationData == "1" ? "\u{2705}" : "\u{26D4}\u{FE0F}"
+                        ],
+                        //TX status
+                        [
+                            "TX status",
+                            txState.status == "1" ? "\u{2705} (transmitting)" : "\u{26D4}\u{FE0F} (not transmitting)"
                         ]
                     ]);
-                    boxdetails.appendChild(table);
+                    box_main.appendChild(table);
                 });
         }
-
-        function refresh_wifi() {
-            get("/wifi").then(data => {
-                document.getElementById('wifi-' + data.type).checked = true;
-                document.getElementById('wifi-ssid').value = data.ssid;
-                document.getElementById('wifi-password').value = data.password;
-            });
-        }
-
-        function refresh_protocol() {
-            get("/protocol").then(data => {
-                document.getElementById('protocol-' + data.type).checked = true;
-                document.getElementById('protocol-port').value = data.port;
-            });
-        }
-
-        function refresh_station() {
-            get("/station").then(data => {
-                document.getElementById('station-mmsi').value = data.mmsi;
-                document.getElementById('station-callsign').value = data.callsign;
-                document.getElementById('station-vesselname').value = data.vesselname;
-                document.getElementById('station-vesseltype').value = data.vesseltype;
-                document.getElementById('station-loa').value = data.loa;
-                document.getElementById('station-beam').value = data.beam;
-                document.getElementById('station-portoffset').value = data.portoffset;
-                document.getElementById('station-bowoffset').value = data.bowoffset;
-            });
-        }
-
-        document.getElementById('refresh').onclick = function () {
-            refresh_info();
-            refresh_wifi();
-            refresh_protocol();
-            refresh_station();
-        };
 
         document.getElementById('toggle-tx').onclick = function () {
             get("/txstate", { "softtxtoggle": 1 }).then(data => {
             });
         };
 
-        document.getElementById('wifi-scan').onclick = function () {
-            get("/scan").then(data => {
-
-                let t = buildElement(
-                    {
-                        type: "table",
-                        childs: ["SSID \u{1F4E1}", "channel \u{1F522}", "RSSI \u{1F4F6}", "encryption \u{1F512}"].map(e => buildElement({ "type": "th", "childs": e }))
-                    }
-                );
-
-                addTableRows(t, 
-                    data.map(
-                        net => [net.ssid, net.channel, net.rssi, net.secure > 0 ? "\u{1F512}" : "open"].map(
-                            e => buildElement({"type": "div", "attr": [["onclick", "document.getElementById(\"wifi-ssid\").value = '" + net.ssid + "'"]], "childs": e})
-                        )
-                    )
-                );
-                document.getElementById('networks').innerHTML = "";
-                document.getElementById('networks').appendChild(t);
-            });
-        };
         setInterval(() => {
             refresh_info();
+        }, 30000);
+
+        setInterval(() => {
+            create_ais_table();
         }, 5000);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const portCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            portCheckboxes.forEach(checkbox => {
+                if (checkbox.id.endsWith("-enabled")) {
+                    checkbox.addEventListener('change', function () {
+                        const portInput = this.closest('div').querySelector('.port-input');
+                        if (this.checked) {
+                            portInput.style.background = '#303245';
+
+                        } else {
+                            portInput.style.background = 'rgb(150 150 150)';
+                        }
+                    });
+                } else {
+                    checkbox.addEventListener('change', function () {
+                        console.log(this.id.slice(5, 8), this.checked)
+                        nmeavalues[this.id.slice(5, 8)] = this.checked;
+                    });
+                }
+            });
+
+            // Initialize the state based on the checkbox
+            portCheckboxes.forEach(checkbox => {
+                checkbox.dispatchEvent(new Event('change'));
+            });
+            refresh_info();
+        });
+
     </script>
+
 </body>
 
 </html>
