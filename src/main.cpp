@@ -849,8 +849,9 @@ void startTCPNMEAForward(uint16_t port) {
 
 void stopTCPNMEAForward() {
     tcpForwardOK = false;
-    tcp.get()->end();
-    tcp.release();
+    if(tcp) {
+        tcp.reset();
+    }
 }
 
 void startNMEAForward() {
